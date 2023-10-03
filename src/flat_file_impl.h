@@ -10,8 +10,14 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "forest_node.h"
+#include "util.h"
 #include "flat_file.h"
+
+#define MAP_ORIGIN (void *)(1 << 10)
+
 int posix_fallocate(int fd, off_t offset, off_t len);
+
 static inline void utreexo_forest_file_close(struct utreexo_forest_file *file) {
   munmap(file->map, file->filesize);
   close(file->fd);
@@ -34,7 +40,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   const int fsize = lseek(fd, 0, SEEK_END);
 
-  char *data = (char *)mmap(NULL, 1024 * 1024 * 1024,
+  char *data = (char *)mmap(MAP_ORIGIN, 1024 * 1024 * 1024,
                             PROT_READ | PROT_WRITE | PROT_GROWSUP,
                             MAP_FILE | MAP_SHARED, fd, 0);
 
@@ -74,9 +80,9 @@ static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
 
   utreexo_forest_mkpg(file, file->wrt_page);
   DEBUG_PRINT("Allocated page %d\n", page_offset);
-  ASSERT(file->wrt_page->n_nodes == 0)
-  ASSERT(file->wrt_page->pg_magic == MAGIC)
-  ASSERT(file->n_pages == page_offset + 1)
+  DEBUG_ASSERT(file->wrt_page->n_nodes == 0)
+  DEBUG_ASSERT(file->wrt_page->pg_magic == MAGIC)
+  DEBUG_ASSERT(file->n_pages == page_offset + 1)
   return EXIT_SUCCESS;
 }
 
@@ -86,27 +92,16 @@ static inline void utreexo_forest_mkpg(struct utreexo_forest_file *file,
   pg->n_nodes = 0;
 
   DEBUG_PRINT("Initialized page %d\n", file->n_pages - 1);
-  ASSERT(pg->n_nodes == 0)
-  ASSERT(pg->pg_magic == MAGIC)
-}
-
-static inline void
-utreexo_forest_file_node_get(struct utreexo_forest_file *file,
-                             utreexo_forest_node **node,
-                             utreexo_forest_node_ptr ptr) {
-  DEBUG_PRINT("Reading node %d from page %d offset=%d\n", ptr.offset, ptr.page,
-              ptr.offset);
-  char *page_data = PAGE_DATA(file->map, ptr.page);
-  utreexo_forest_node *nodes = (utreexo_forest_node *)page_data;
-  *node = nodes + ptr.offset;
+  DEBUG_ASSERT(pg->n_nodes == 0)
+  DEBUG_ASSERT(pg->pg_magic == MAGIC)
 }
 
 static inline void
 utreexo_forest_file_node_put(struct utreexo_forest_file *file,
-                             utreexo_forest_node_ptr *offset,
+                             utreexo_forest_node **_ptr,
                              utreexo_forest_node node) {
   const uint64_t page_nodes = file->wrt_page->n_nodes;
-  if (page_nodes == NODES_PER_ARENA) {
+  if (page_nodes == NODES_PER_PAGE) {
     DEBUG_PRINT("Page is full, allocating new page\n");
     if (utreexo_forest_page_alloc(file)) {
       fprintf(stderr, "Failed to allocate page\n");
@@ -116,40 +111,31 @@ utreexo_forest_file_node_put(struct utreexo_forest_file *file,
   const uint64_t page_offset = page_nodes;
   DEBUG_PRINT("Writing node %d to page %d offset=%d\n", page_nodes,
               file->n_pages - 1, page_offset);
-  memcpy((utreexo_forest_node *)((char *)file->wrt_page + 16) + page_nodes,
-         &node, sizeof(node));
+  utreexo_forest_node *ptr =
+      (utreexo_forest_node *)((char *)file->wrt_page + 16) + page_nodes;
+  memcpy(ptr, &node, sizeof(node));
   ++(file->wrt_page->n_nodes);
-  *offset = (utreexo_forest_node_ptr){.offset = page_offset,
-                                      .page = file->n_pages - 1};
+  *_ptr = ptr;
 }
 
 static inline void
 utreexo_forest_file_node_del(struct utreexo_forest_file *file,
-                             utreexo_forest_node_ptr ptr) {
+                             const utreexo_forest_node *node) {
+  uint64_t nPage = ((uint64_t)((char *)node - file->map)) / PAGE_SIZE;
+
   struct utreexo_forest_page_header *pg =
-      (struct utreexo_forest_page_header *)((char *)file->map +
-                                            ptr.page * PAGE_SIZE);
+      (struct utreexo_forest_page_header *)PAGE(file->map, nPage);
+
+  DEBUG_PRINT("Deleting node from page %d remaining: %u\n", nPage, pg->n_nodes);
+
   if (pg->n_nodes == 0) {
     fprintf(stderr, "Trying to delete from empty page\n");
     exit(1);
   }
+
   if (pg->n_nodes == 1) {
-    DEBUG_PRINT("Deallocating page %d\n", ptr.page);
-    struct utreexo_forest_free_page *f =
-        (struct utreexo_forest_free_page *)malloc(
-            sizeof(struct utreexo_forest_free_page));
-    *f = (struct utreexo_forest_free_page){
-        .pos = ptr.page * PAGE_SIZE,
-        .next = file->free_list.tail,
-    };
-    if (file->free_list.head == NULL) {
-      file->free_list.head = f;
-    } else {
-      file->free_list.tail->next = f;
-      file->free_list.tail = f;
-    }
+    DEBUG_PRINT("Deallocating page %d\n", nPage);
   }
-  DEBUG_PRINT("Deleting node %d from page %d\n", ptr.offset, ptr.page);
   --pg->n_nodes;
 }
 #endif

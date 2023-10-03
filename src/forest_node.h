@@ -2,16 +2,14 @@
 #define UTREEXO_FOREST_NODE_H
 #include "parent_hash.h"
 
-typedef struct {
-  uint64_t offset;
-  uint64_t page;
-} utreexo_forest_node_ptr;
-
-typedef struct {
+/* A node inside our forest, may be either a branch or a leaf, holds a hash and
+ * a few pointers to: (i) parent (ii) left child (if not leaf) (ii) right child
+ * (if not leaf) */
+typedef struct utreexo_forest_node {
   utreexo_node_hash hash;
-  utreexo_forest_node_ptr parent;
-  utreexo_forest_node_ptr left_child;
-  utreexo_forest_node_ptr right_child;
-} utreexo_forest_node;
+  struct utreexo_forest_node *parent;
+  struct utreexo_forest_node *left_child;
+  struct utreexo_forest_node *right_child;
+} __attribute__((__packed__)) utreexo_forest_node;
 
 #endif

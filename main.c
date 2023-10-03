@@ -16,5 +16,11 @@ int main() {
   utreexo_forest_add(&p, (utreexo_node_hash){
                              .hash = {0x00, 0x01, 0x02, 0x03},
                          });
+  utreexo_forest_add(&p, (utreexo_node_hash){
+                             .hash = {0x00, 0x01, 0x02, 0x03},
+                         });
+  utreexo_forest_add(&p, (utreexo_node_hash){
+                             .hash = {0x00, 0x01, 0x02, 0x03},
+                         });
   return 0;
 }
