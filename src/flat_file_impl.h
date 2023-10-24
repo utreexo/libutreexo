@@ -14,7 +14,17 @@
 #include "util.h"
 #include "flat_file.h"
 
+#ifndef TEST
 #define MAP_ORIGIN (void *)(1 << 10)
+#else 
+#define MAP_ORIGIN NULL 
+#endif
+
+#ifdef TEST 
+#define MAP_SIZE 1024
+#else
+#define MAP_SIZE 1024 * 1024 * 1024
+#endif
 
 int posix_fallocate(int fd, off_t offset, off_t len);
 
@@ -40,7 +50,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   const int fsize = lseek(fd, 0, SEEK_END);
 
-  char *data = (char *)mmap(MAP_ORIGIN, 1024 * 1024 * 1024,
+  char *data = (char *)mmap(MAP_ORIGIN, MAP_SIZE,
                             PROT_READ | PROT_WRITE | PROT_GROWSUP,
                             MAP_FILE | MAP_SHARED, fd, 0);
 
@@ -56,6 +66,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
   (*file)->filesize = fsize;
   (*file)->n_pages = 0;
   (*file)->map = data + sizeof(int);
+
   /* This is a new file, we need to initialize at least the first page */
   if (fsize < 4 || *(int *)data != FILE_MAGIC) {
     DEBUG_PRINT("No pages found, creating new file\n");

@@ -28,7 +28,7 @@
 
 #include "forest_node.h"
 
-#define NODES_PER_PAGE 10
+#define NODES_PER_PAGE 1024
 
 /* The size of a page minus the header */
 #define PAGE_DATA_SIZE (NODES_PER_PAGE * sizeof(utreexo_forest_node))
@@ -64,7 +64,7 @@ struct utreexo_forest_page_header {
   /* Used for detecting corruption */
   uint64_t pg_magic;
   uint64_t n_nodes;
-};
+} __attribute__((__packed__));
 
 /* Our internal representation of a file, this struct doesn't get persisted on our file,
  * it just keep pointers to the actual stuff at runtime. */
@@ -76,7 +76,7 @@ struct utreexo_forest_file {
   uint64_t filesize;
   uint32_t n_pages;
   utreexo_forest_free_page *fpg; // The first free page
-};
+} __attribute__((__packed__));
 
 /* Close the file, and free the memory */
 static inline void utreexo_forest_file_close(struct utreexo_forest_file *file);

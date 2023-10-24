@@ -1,9 +1,13 @@
-#include "src/flat_file.h"
-#include "src/flat_file_impl.h"
-#include "src/parent_hash.h"
+/* Tests the flat files implementation */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
+#include "src/flat_file.h"
+#include "src/flat_file_impl.h"
+#include "src/parent_hash.h"
 
 const static char expected_hash[][32] = {{0x00, 0x01, 0x02, 0x03},
                                          {0x00, 0x01, 0x02, 0x04},
@@ -11,15 +15,17 @@ const static char expected_hash[][32] = {{0x00, 0x01, 0x02, 0x03},
 // asserts if two hashes are equal
 #define ASSERT_EQ(a, b) DEBUG_ASSERT(memcmp(a, b, 32) == 0)
 
+// can we add stuff to the file?
 utreexo_forest_node *test_create_nodes(struct utreexo_forest_file *file);
-
+// can we get nodes back?
 void test_retrieve_nodes(struct utreexo_forest_file *file,
                          const utreexo_forest_node *parent);
-
+// Can we delete stuff from the fale?
 void test_delete_nodes(struct utreexo_forest_file *file,
                        const utreexo_forest_node *parent_pos);
-
+// Add a bunch of stuff to see if page allocation works
 void test_add_many(int n_adds);
+// Add and remove a bunch of stuff to see if page reallocation works (TODO)
 
 int main() {
   struct utreexo_forest_file *file;
@@ -32,6 +38,7 @@ int main() {
   test_add_many(NODES_PER_ARENA + 1);
   return 0;
 }
+
 void print_hash(utreexo_node_hash hash) {
   for (int i = 0; i < 32; i++) {
     printf("%02x", hash.hash[i]);

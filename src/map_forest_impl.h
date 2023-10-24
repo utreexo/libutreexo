@@ -1,4 +1,3 @@
-#include "flat_file.h"
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -31,13 +30,17 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
 
   while ((nLeaves >> height & 1) == 1) {
     utreexo_forest_node *root = p->roots[height];
+    DEBUG_ASSERT(root != NULL);
     p->roots[height] = NULL;
     if (memcmp(root->hash.hash, UTREEXO_ZERO_HASH, 32) == 0) {
       break;
     }
+
     utreexo_forest_node new_root = {
         .parent = NULL, .left_child = root, .right_child = pnode};
+
     parent_hash(new_root.hash.hash, root->hash.hash, pnode->hash.hash);
+    
     utreexo_forest_node *new_root_pos = NULL;
     utreexo_forest_file_node_put(p->data, &new_root_pos, new_root);
 
@@ -47,6 +50,7 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
     pnode = new_root_pos;
     height++;
   }
+  DEBUG_ASSERT(p->roots[height] == NULL);
   p->roots[height] = pnode;
   ++p->nLeaf;
 }

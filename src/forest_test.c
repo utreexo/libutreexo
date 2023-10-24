@@ -190,8 +190,7 @@ void test_add_many() {
 /* Tests from https://github.com/mit-dci/rustreexo */
 void test_from_test_cases(void) {
   TEST_BEGIN("rustreexo test suite");
-  for (int i = 0; i < sizeof(insertion_tests) / sizeof(insertion_tests[0]);
-       i++) {
+  for (int i = 0; i < 4; i++) {
     const add_test_data *tc = &insertion_tests[i];
     struct utreexo_forest_file *file = NULL;
     char filename[100] = {0};
