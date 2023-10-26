@@ -196,7 +196,7 @@ void test_from_test_cases(void) {
     char filename[100] = {0};
 
     sprintf(filename, "forest_%d.bin", i);
-    utreexo_forest_file_init(&file, filename);  
+    utreexo_forest_file_init(&file, filename);
     struct utreexo_forest p = {
         .data = file,
         .roots = {0},
@@ -208,13 +208,14 @@ void test_from_test_cases(void) {
       hash_from_u8(leaf.hash, tc->leaf_preimages[j]);
       utreexo_forest_add(&p, leaf);
     }
-    
+
     assert(p.nLeaf == tc->preimage_count);
 
     size_t root = 63;
-    
+
     for (size_t j = 0; j < tc->expected_roots_len; ++j) {
-      while (p.roots[root] == NULL && root >= 0) --root;
+      while (p.roots[root] == NULL && root >= 0)
+        --root;
       if (root < 0) {
         printf("missing roots\n");
         abort();

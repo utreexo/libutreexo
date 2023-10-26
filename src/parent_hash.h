@@ -31,7 +31,8 @@ static inline void parent_hash(uint8_t out[32], uint8_t left[32],
   sha512_256(out, concat, 64);
 }
 
-/* An utility type that represents one hash, can be either sha256 or sha512_256 */
+/* An utility type that represents one hash, can be either sha256 or sha512_256
+ */
 struct utreexo_hash {
   uint8_t hash[32];
 };

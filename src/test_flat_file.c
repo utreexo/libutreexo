@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "flat_file.h"
 #include "flat_file_impl.h"
 #include "forest_node.h"
@@ -98,7 +97,7 @@ void test_delete_nodes(struct utreexo_forest_file *file,
 void test_retrieve_nodes(struct utreexo_forest_file *file,
                          const utreexo_forest_node *parent) {
   TEST_BEGIN("retrieve nodes");
-  
+
   // check the parent node
   ASSERT_ARRAY_EQ(parent->hash.hash, expected_hash[0], 32);
   // check the left child
@@ -111,7 +110,7 @@ void test_retrieve_nodes(struct utreexo_forest_file *file,
 
 void test_add_many(int n_adds) {
   TEST_BEGIN("add many");
-  
+
   struct utreexo_forest_file *file;
   utreexo_forest_file_init(&file, "add_many.bin");
   utreexo_forest_node *node_pos;
@@ -135,18 +134,18 @@ void test_free_page_list() {
   utreexo_forest_file_init(&file, "reallocation.bin");
   utreexo_forest_node *nodes[NODES_PER_PAGE];
   const utreexo_forest_node node = {
-      .hash = {0}, 
-      .parent = NULL, 
-      .left_child = NULL, 
-      .right_child = NULL, 
-    };
-  
+      .hash = {0},
+      .parent = NULL,
+      .left_child = NULL,
+      .right_child = NULL,
+  };
+
   // Fills up a page
   for (int i = 0; i < NODES_PER_PAGE; ++i) {
     utreexo_forest_file_node_put(file, &nodes[i], node);
   }
   utreexo_forest_node *pnode = NULL;
-  
+
   // triggers the allocation of a new page
   for (int i = 0; i < NODES_PER_PAGE; ++i) {
     utreexo_forest_file_node_put(file, &pnode, node);
@@ -156,10 +155,10 @@ void test_free_page_list() {
   for (int i = 0; i < NODES_PER_PAGE; ++i) {
     utreexo_forest_file_node_del(file, nodes[i]);
   }
-  
+
   // Add one node
   utreexo_forest_file_node_put(file, &pnode, node);
-  
+
   // It should be where nodes[0] was (the beggining of the first page)
   ASSERT_EQ(pnode, nodes[0]);
   TEST_END;

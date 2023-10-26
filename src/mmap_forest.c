@@ -6,10 +6,10 @@ static const int utreexo_forest_version_major = 0;
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mmap_forest.h"
 #include "flat_file.h"
-#include "util.h"
 #include "map_forest_impl.h"
+#include "mmap_forest.h"
+#include "util.h"
 
 void utreexo_forest_modify(struct utreexo_forest *forest,
                            utreexo_node_hash *leaf, int leaf_count) {

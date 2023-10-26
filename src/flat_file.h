@@ -66,12 +66,12 @@ struct utreexo_forest_page_header {
   uint64_t n_nodes;
 } __attribute__((__packed__));
 
-/* Our internal representation of a file, this struct doesn't get persisted on our file,
- * it just keep pointers to the actual stuff at runtime. */
+/* Our internal representation of a file, this struct doesn't get persisted on
+ * our file, it just keep pointers to the actual stuff at runtime. */
 struct utreexo_forest_file {
   const char *filename;
-  char *map;  // The actual map
-  struct utreexo_forest_page_header *wrt_page;  // Which page are we on
+  char *map;                                   // The actual map
+  struct utreexo_forest_page_header *wrt_page; // Which page are we on
   int fd;
   uint64_t filesize;
   uint32_t n_pages;

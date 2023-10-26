@@ -10,17 +10,17 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "flat_file.h"
 #include "forest_node.h"
 #include "util.h"
-#include "flat_file.h"
 
 #ifndef TEST
 #define MAP_ORIGIN (void *)(1 << 10)
-#else 
-#define MAP_ORIGIN NULL 
+#else
+#define MAP_ORIGIN NULL
 #endif
 
-#ifdef TEST 
+#ifdef TEST
 #define MAP_SIZE 1024
 #else
 #define MAP_SIZE 1024 * 1024 * 1024
@@ -50,9 +50,9 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   const int fsize = lseek(fd, 0, SEEK_END);
 
-  char *data = (char *)mmap(MAP_ORIGIN, MAP_SIZE,
-                            PROT_READ | PROT_WRITE | PROT_GROWSUP,
-                            MAP_FILE | MAP_SHARED, fd, 0);
+  char *data =
+      (char *)mmap(MAP_ORIGIN, MAP_SIZE, PROT_READ | PROT_WRITE | PROT_GROWSUP,
+                   MAP_FILE | MAP_SHARED, fd, 0);
 
   if (data == MAP_FAILED) {
     perror("mmap");
@@ -77,7 +77,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
     return;
   }
   (*file)->n_pages = 1;
-  (*file)->wrt_page = (struct utreexo_forest_page_header *)(data + 4); 
+  (*file)->wrt_page = (struct utreexo_forest_page_header *)(data + 4);
   DEBUG_PRINT("Found %d pages\n", (*file)->n_pages);
 }
 static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
@@ -85,7 +85,7 @@ static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
   if (file->fpg != NULL) {
     DEBUG_PRINT("Found a free page");
     utreexo_forest_free_page *nhead = file->fpg->next;
-    file->wrt_page = (struct utreexo_forest_page_header *) file->fpg;
+    file->wrt_page = (struct utreexo_forest_page_header *)file->fpg;
     file->fpg = nhead;
     return EXIT_SUCCESS;
   }
@@ -160,9 +160,10 @@ utreexo_forest_file_node_del(struct utreexo_forest_file *file,
       return;
     }
     // Walk the list until find the last element
-    while(pg->next != NULL) pg = (utreexo_forest_free_page *)pg->next;
+    while (pg->next != NULL)
+      pg = (utreexo_forest_free_page *)pg->next;
 
-    pg->next =(utreexo_forest_free_page *) PAGE(file->map, nPage);
+    pg->next = (utreexo_forest_free_page *)PAGE(file->map, nPage);
   }
 }
 #endif

@@ -13,9 +13,9 @@
 
 #include "flat_file_impl.h"
 #include "forest_node.h"
+#include "mmap_forest.h"
 #include "parent_hash.h"
 #include "util.h"
-#include "mmap_forest.h"
 
 static const char UTREEXO_ZERO_HASH[32] = {0};
 static inline void utreexo_forest_add(struct utreexo_forest *p,
@@ -40,7 +40,7 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
         .parent = NULL, .left_child = root, .right_child = pnode};
 
     parent_hash(new_root.hash.hash, root->hash.hash, pnode->hash.hash);
-    
+
     utreexo_forest_node *new_root_pos = NULL;
     utreexo_forest_file_node_put(p->data, &new_root_pos, new_root);
 

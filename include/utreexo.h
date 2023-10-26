@@ -57,9 +57,7 @@
 /**
  * A utreexo node hash. This is just a 32-byte array.
  */
-typedef struct utreexo_node_hash {
-  uint8_t hash[32];
-} utreexo_node_hash;
+typedef utreexo_node_hash uint8_t hash[32];
 
 /**
  * A utreexo forest. This is the main type of this module. It represents a
