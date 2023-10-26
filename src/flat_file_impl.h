@@ -66,6 +66,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
   (*file)->filesize = fsize;
   (*file)->n_pages = 0;
   (*file)->map = data + sizeof(int);
+  (*file)->fpg = NULL;
 
   /* This is a new file, we need to initialize at least the first page */
   if (fsize < 4 || *(int *)data != FILE_MAGIC) {
@@ -76,11 +77,19 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
     return;
   }
   (*file)->n_pages = 1;
-  (*file)->wrt_page = (struct utreexo_forest_page_header *)(data + 4);
+  (*file)->wrt_page = (struct utreexo_forest_page_header *)(data + 4); 
   DEBUG_PRINT("Found %d pages\n", (*file)->n_pages);
 }
 static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
-  DEBUG_PRINT("Allocating page\n");
+  DEBUG_PRINT("Grabbing a new page\n");
+  if (file->fpg != NULL) {
+    DEBUG_PRINT("Found a free page");
+    utreexo_forest_free_page *nhead = file->fpg->next;
+    file->wrt_page = (struct utreexo_forest_page_header *) file->fpg;
+    file->fpg = nhead;
+    return EXIT_SUCCESS;
+  }
+  DEBUG_PRINT("Creating a new page\n");
   const int page_offset = file->n_pages;
   file->n_pages++;
   file->filesize += PAGE_SIZE;
@@ -111,13 +120,14 @@ static inline void
 utreexo_forest_file_node_put(struct utreexo_forest_file *file,
                              utreexo_forest_node **_ptr,
                              utreexo_forest_node node) {
-  const uint64_t page_nodes = file->wrt_page->n_nodes;
+  uint64_t page_nodes = file->wrt_page->n_nodes;
   if (page_nodes == NODES_PER_PAGE) {
     DEBUG_PRINT("Page is full, allocating new page\n");
     if (utreexo_forest_page_alloc(file)) {
       fprintf(stderr, "Failed to allocate page\n");
       exit(1);
     }
+    page_nodes = 0; // we've just created a new page
   }
   const uint64_t page_offset = page_nodes;
   DEBUG_PRINT("Writing node %d to page %d offset=%d\n", page_nodes,
@@ -138,15 +148,21 @@ utreexo_forest_file_node_del(struct utreexo_forest_file *file,
       (struct utreexo_forest_page_header *)PAGE(file->map, nPage);
 
   DEBUG_PRINT("Deleting node from page %d remaining: %u\n", nPage, pg->n_nodes);
+  DEBUG_ASSERT(pg->n_nodes != 0);
+  DEBUG_ASSERT(file->n_pages >= nPage);
 
-  if (pg->n_nodes == 0) {
-    fprintf(stderr, "Trying to delete from empty page\n");
-    exit(1);
-  }
-
-  if (pg->n_nodes == 1) {
+  if (--pg->n_nodes == 0) {
     DEBUG_PRINT("Deallocating page %d\n", nPage);
+    utreexo_forest_free_page *pg = file->fpg;
+    // This is the first free page
+    if (pg == NULL) {
+      file->fpg = (utreexo_forest_free_page *)PAGE(file->map, nPage);
+      return;
+    }
+    // Walk the list until find the last element
+    while(pg->next != NULL) pg = (utreexo_forest_free_page *)pg->next;
+
+    pg->next =(utreexo_forest_free_page *) PAGE(file->map, nPage);
   }
-  --pg->n_nodes;
 }
 #endif

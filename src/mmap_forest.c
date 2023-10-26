@@ -21,10 +21,11 @@ void utreexo_forest_modify(struct utreexo_forest *forest,
 void utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
   struct utreexo_forest *forest = malloc(sizeof(struct utreexo_forest));
   struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, filename);
+  void *roots = NULL;
+  utreexo_forest_file_init(&file, filename, &roots);
   forest->data = file;
   forest->nLeaf = 0;
-
+  (*p)->roots = roots;
   DEBUG_ASSERT(*(uint32_t *)(*file).map == MAGIC);
   *p = forest;
 }

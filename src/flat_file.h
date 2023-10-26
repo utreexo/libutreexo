@@ -28,7 +28,7 @@
 
 #include "forest_node.h"
 
-#define NODES_PER_PAGE 1024
+#define NODES_PER_PAGE 10
 
 /* The size of a page minus the header */
 #define PAGE_DATA_SIZE (NODES_PER_PAGE * sizeof(utreexo_forest_node))
@@ -55,7 +55,7 @@
 
 /* An entry in our free pages list, we use this to keep track of unused pages
  * that can be reused in future additions */
-typedef struct {
+typedef struct utreexo_forest_free_page {
   struct utreexo_forest_free_page *next;
 } utreexo_forest_free_page;
 
