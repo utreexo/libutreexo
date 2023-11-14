@@ -86,11 +86,9 @@ static inline void utreexo_forest_file_close(struct utreexo_forest_file *file);
 static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
                                             const char *filename);
 
-/* Puts a new node in the file, returns the offset for future referencing */
-static inline void
-utreexo_forest_file_node_put(struct utreexo_forest_file *file,
-                             utreexo_forest_node **_ptr,
-                             utreexo_forest_node node);
+/* Allocs a new node and returns a pointer to it */
+static inline utreexo_forest_node *
+utreexo_forest_file_node_alloc(struct utreexo_forest_file *file);
 
 /* Initialize a new page */
 static inline void utreexo_forest_mkpg(struct utreexo_forest_file *file,

@@ -247,7 +247,6 @@ void test_grab_node() {
 
   utreexo_forest_node *node = NULL, *sibling = NULL, *parent = NULL;
   grab_node(&p, &node, &sibling, &parent, 4);
-  utreexo_forest_print(p.roots[1]);
   for (size_t i = 0; i < 32; ++i)
     printf("%02x", node->hash.hash[i]);
 
@@ -255,11 +254,11 @@ void test_grab_node() {
 }
 
 int main() {
-  // test_parent_hash();
-  // test_add_single();
-  // test_add_two();
-  // test_add_many();
-  // test_from_test_cases();
-  test_grab_node();
+  test_parent_hash();
+  test_add_single();
+  test_add_two();
+  test_add_many();
+  test_from_test_cases();
+  // test_grab_node();
   return 0;
 }

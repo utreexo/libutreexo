@@ -116,10 +116,8 @@ static inline void utreexo_forest_mkpg(struct utreexo_forest_file *file,
   DEBUG_ASSERT(pg->pg_magic == MAGIC)
 }
 
-static inline void
-utreexo_forest_file_node_put(struct utreexo_forest_file *file,
-                             utreexo_forest_node **_ptr,
-                             utreexo_forest_node node) {
+static inline utreexo_forest_node *
+utreexo_forest_file_node_alloc(struct utreexo_forest_file *file) {
   uint64_t page_nodes = file->wrt_page->n_nodes;
   if (page_nodes == NODES_PER_PAGE) {
     DEBUG_PRINT("Page is full, allocating new page\n");
@@ -129,41 +127,39 @@ utreexo_forest_file_node_put(struct utreexo_forest_file *file,
     }
     page_nodes = 0; // we've just created a new page
   }
-  const uint64_t page_offset = page_nodes;
   DEBUG_PRINT("Writing node %d to page %d offset=%d\n", page_nodes,
-              file->n_pages - 1, page_offset);
+              file->n_pages - 1, page_nodes / sizeof(utreexo_forest_node));
   utreexo_forest_node *ptr =
       (utreexo_forest_node *)((char *)file->wrt_page + 16) + page_nodes;
-  memcpy(ptr, &node, sizeof(node));
   ++(file->wrt_page->n_nodes);
-  *_ptr = ptr;
+  return ptr;
 }
 
 static inline void
 utreexo_forest_file_node_del(struct utreexo_forest_file *file,
                              const utreexo_forest_node *node) {
-  uint64_t nPage = ((uint64_t)((char *)node - file->map)) / PAGE_SIZE;
+  uint64_t npage = ((uint64_t)((char *)node - file->map)) / PAGE_SIZE;
 
   struct utreexo_forest_page_header *pg =
-      (struct utreexo_forest_page_header *)PAGE(file->map, nPage);
+      (struct utreexo_forest_page_header *)PAGE(file->map, npage);
 
-  DEBUG_PRINT("Deleting node from page %d remaining: %u\n", nPage, pg->n_nodes);
+  DEBUG_PRINT("Deleting node from page %d remaining: %u\n", npage, pg->n_nodes);
   DEBUG_ASSERT(pg->n_nodes != 0);
-  DEBUG_ASSERT(file->n_pages >= nPage);
+  DEBUG_ASSERT(file->n_pages >= npage);
 
   if (--pg->n_nodes == 0) {
-    DEBUG_PRINT("Deallocating page %d\n", nPage);
+    DEBUG_PRINT("Deallocating page %d\n", npage);
     utreexo_forest_free_page *pg = file->fpg;
     // This is the first free page
     if (pg == NULL) {
-      file->fpg = (utreexo_forest_free_page *)PAGE(file->map, nPage);
+      file->fpg = (utreexo_forest_free_page *)PAGE(file->map, npage);
       return;
     }
     // Walk the list until find the last element
     while (pg->next != NULL)
       pg = (utreexo_forest_free_page *)pg->next;
 
-    pg->next = (utreexo_forest_free_page *)PAGE(file->map, nPage);
+    pg->next = (utreexo_forest_free_page *)PAGE(file->map, npage);
   }
 }
 #endif

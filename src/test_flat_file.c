@@ -56,28 +56,28 @@ utreexo_forest_node *test_create_nodes(struct utreexo_forest_file *file) {
   utreexo_forest_node *left_child_pos;
   utreexo_forest_node *parent_pos;
 
-  utreexo_forest_node right_child = {
-      .hash = {0x00, 0x01, 0x02, 0x05},
-      .left_child = 0,
-      .right_child = 0,
-      .parent = 0,
-  };
-  utreexo_forest_file_node_put(file, &right_child_pos, right_child);
-  utreexo_forest_node left_child = {
-      .hash = {0x00, 0x01, 0x02, 0x04},
+  right_child_pos = utreexo_forest_file_node_alloc(file);
+  *right_child_pos = (utreexo_forest_node){
+      .hash = {{0x00, 0x01, 0x02, 0x05}},
       .left_child = 0,
       .right_child = 0,
       .parent = 0,
   };
 
-  utreexo_forest_file_node_put(file, &left_child_pos, left_child);
-  utreexo_forest_node parent = {
-      .hash = {0x00, 0x01, 0x02, 0x03},
+  left_child_pos = utreexo_forest_file_node_alloc(file);
+  *left_child_pos = (utreexo_forest_node){
+      .hash = {{0x00, 0x01, 0x02, 0x04}},
+      .left_child = 0,
+      .right_child = 0,
+      .parent = 0,
+  };
+  parent_pos = utreexo_forest_file_node_alloc(file);
+  *parent_pos = (utreexo_forest_node){
+      .hash = {{0x00, 0x01, 0x02, 0x03}},
       .parent = 0,
       .left_child = left_child_pos,
       .right_child = right_child_pos,
   };
-  utreexo_forest_file_node_put(file, &parent_pos, parent);
   TEST_END;
 
   return parent_pos;
@@ -113,17 +113,11 @@ void test_add_many(int n_adds) {
 
   struct utreexo_forest_file *file;
   utreexo_forest_file_init(&file, "add_many.bin");
-  utreexo_forest_node *node_pos;
-  utreexo_forest_node node = {
-      .hash = {0x00},
-      .left_child = NULL,
-      .right_child = NULL,
-      .parent = (void *)0xffffffff,
-  };
-  memset(node.hash.hash, 0xff, 32);
+
   for (int i = 0; i < n_adds; i++) {
-    utreexo_forest_file_node_put(file, &node_pos, node);
+    utreexo_forest_file_node_alloc(file);
   }
+
   utreexo_forest_file_close(file);
   TEST_END;
 }
@@ -132,9 +126,9 @@ void test_free_page_list() {
   TEST_BEGIN("test free page reallocation");
   struct utreexo_forest_file *file;
   utreexo_forest_file_init(&file, "reallocation.bin");
-  utreexo_forest_node *nodes[NODES_PER_PAGE];
+  utreexo_forest_node *nodes[NODES_PER_PAGE] = {0};
   const utreexo_forest_node node = {
-      .hash = {0},
+      .hash = {{0}},
       .parent = NULL,
       .left_child = NULL,
       .right_child = NULL,
@@ -142,13 +136,15 @@ void test_free_page_list() {
 
   // Fills up a page
   for (int i = 0; i < NODES_PER_PAGE; ++i) {
-    utreexo_forest_file_node_put(file, &nodes[i], node);
+    nodes[i] = utreexo_forest_file_node_alloc(file);
+    memcpy(nodes[i], &node, sizeof(utreexo_forest_node));
   }
   utreexo_forest_node *pnode = NULL;
 
   // triggers the allocation of a new page
   for (int i = 0; i < NODES_PER_PAGE; ++i) {
-    utreexo_forest_file_node_put(file, &pnode, node);
+    pnode = utreexo_forest_file_node_alloc(file);
+    memcpy(pnode, &node, sizeof(utreexo_forest_node));
   }
 
   // remove all nodes from the first page
@@ -157,7 +153,7 @@ void test_free_page_list() {
   }
 
   // Add one node
-  utreexo_forest_file_node_put(file, &pnode, node);
+  pnode = utreexo_forest_file_node_alloc(file);
 
   // It should be where nodes[0] was (the beggining of the first page)
   ASSERT_EQ(pnode, nodes[0]);
