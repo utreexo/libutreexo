@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -We -g -pedantic -std=c99
+CFLAGS=-Wall -W -g -pedantic -std=c99
 
 all: build-release
 

@@ -232,25 +232,25 @@ void test_from_test_cases(void) {
 void test_grab_node() {
   struct utreexo_forest_file *file = NULL;
   utreexo_forest_file_init(&file, "test_grab_node.bin");
-
+  const unsigned char *expected = (unsigned char[]){
+      0xe7, 0x7b, 0x9a, 0x9a, 0xe9, 0xe3, 0x0b, 0x0d, 0xbd, 0xb6, 0xf5,
+      0x10, 0xa2, 0x64, 0xef, 0x9d, 0xe7, 0x81, 0x50, 0x1d, 0x7b, 0x6b,
+      0x92, 0xae, 0x89, 0xeb, 0x05, 0x9c, 0x5a, 0xb7, 0x43, 0xdb};
   struct utreexo_forest p = {
       .data = file,
       .roots = {0},
       .nLeaf = 0,
   };
 
-  for (size_t i = 0; i < 15; ++i) {
+  for (size_t i = 0; i < 8; ++i) {
     utreexo_node_hash leaf = {.hash = {0}};
     hash_from_u8(leaf.hash, i);
     utreexo_forest_add(&p, leaf);
   }
 
   utreexo_forest_node *node = NULL, *sibling = NULL, *parent = NULL;
-  grab_node(&p, &node, &sibling, &parent, 4);
-  for (size_t i = 0; i < 32; ++i)
-    printf("%02x", node->hash.hash[i]);
-
-  printf("\n");
+  grab_node(&p, &node, &sibling, &parent, 5);
+  ASSERT_ARRAY_EQ(node->hash.hash, expected, 32);
 }
 
 int main() {
@@ -259,6 +259,6 @@ int main() {
   test_add_two();
   test_add_many();
   test_from_test_cases();
-  // test_grab_node();
+  test_grab_node();
   return 0;
 }

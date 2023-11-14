@@ -69,12 +69,20 @@ struct utreexo_forest_page_header {
 /* Our internal representation of a file, this struct doesn't get persisted on
  * our file, it just keep pointers to the actual stuff at runtime. */
 struct utreexo_forest_file {
+  struct utreexo_forest_file_header *header;
   const char *filename;
-  char *map;                                   // The actual map
-  struct utreexo_forest_page_header *wrt_page; // Which page are we on
+  char *map; // The actual map
   int fd;
-  uint64_t filesize;
+} __attribute__((__packed__));
+
+/* Things we need to keep through different sessions, they are persisted at the
+ * beginning of a file
+ * */
+struct utreexo_forest_file_header {
+  uint64_t magic;
+  struct utreexo_forest_page_header *wrt_page; // Which page are we on
   uint32_t n_pages;
+  uint64_t filesize;
   utreexo_forest_free_page *fpg; // The first free page
 } __attribute__((__packed__));
 

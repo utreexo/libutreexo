@@ -18,6 +18,7 @@
 #include "util.h"
 
 static const char UTREEXO_ZERO_HASH[32] = {0};
+
 static inline void utreexo_forest_add(struct utreexo_forest *p,
                                       utreexo_node_hash leaf) {
   utreexo_forest_node *pnode = utreexo_forest_file_node_alloc(p->data);
@@ -30,7 +31,7 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
 
   while ((nLeaves >> height & 1) == 1) {
     utreexo_forest_node *root = p->roots[height];
-    DEBUG_ASSERT(root != NULL);
+    debug_assert(root != NULL);
     p->roots[height] = NULL;
     if (memcmp(root->hash.hash, UTREEXO_ZERO_HASH, 32) == 0) {
       break;
@@ -48,7 +49,7 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
     pnode = proot;
     height++;
   }
-  DEBUG_ASSERT(p->roots[height] == NULL);
+  debug_assert(p->roots[height] == NULL);
   p->roots[height] = pnode;
   ++p->nLeaf;
 }
@@ -59,24 +60,32 @@ static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **parent, uint64_t pos) {
   node_offset offset = detect_offset(pos, f->nLeaf);
 
-  DEBUG_ASSERT(offset.tree < 64);
+  debug_assert(offset.tree < 64);
 
   utreexo_forest_node *pnode = f->roots[offset.tree];
   utreexo_forest_node *psibling = NULL;
   utreexo_forest_node *pparent = NULL;
+  if (offset.depth == 0) {
+    *node = pnode;
+    *sibling = psibling;
+    *parent = pparent;
 
-  for (size_t h = 0; h < offset.depth; ++h) {
-    if (pnode->right_child == NULL)
-      break;
+    return;
+  }
+  for (size_t h = offset.depth; h > 0; --h) {
+    uint32_t mask = 1 << (h - 1);
 
     pparent = pnode;
 
-    if ((offset.bits >> h & 1) == 1) {
+    if (pnode->right_child == NULL)
+      break;
+
+    if (mask & pos) {
       pnode = pparent->right_child;
       psibling = pparent->left_child;
     } else {
       psibling = pparent->right_child;
-      pnode = pparent->right_child;
+      pnode = pparent->left_child;
     }
   }
 
@@ -85,12 +94,19 @@ static inline void grab_node(struct utreexo_forest *f,
   *parent = pparent;
 }
 
-static inline void utreexo_forest_remove(struct utreexo_forest *p,
-                                         uint64_t leaf_number) {}
-
 static inline void utreexo_forest_free(struct utreexo_forest *forest) {
   utreexo_forest_file_close(forest->data);
   free(forest);
+}
+
+static inline void recompute_parent_hash(struct utreexo_forest *f,
+                                         utreexo_forest_node *origin) {
+  utreexo_forest_node *pnode = origin->parent;
+  while (pnode != NULL) {
+    parent_hash(pnode->hash.hash, pnode->left_child->hash.hash,
+                pnode->right_child->hash.hash);
+    pnode = pnode->parent;
+  }
 }
 
 static inline void delete_single(struct utreexo_forest *f, uint64_t pos) {

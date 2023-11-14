@@ -3,18 +3,18 @@
 #include <stdint.h>
 
 #ifdef DEBUG
-#define DEBUG_PRINT(...)                                                       \
+#define debug_print(...)                                                       \
   do {                                                                         \
     fprintf(stderr, __VA_ARGS__);                                              \
   } while (0)
-#define DEBUG_ASSERT(x)                                                        \
+#define debug_assert(x)                                                        \
   if (!(x)) {                                                                  \
     fprintf(stderr, "Assertion failed: %s\n", #x);                             \
     exit(1);                                                                   \
   }
 #else
-#define DEBUG_PRINT(...)
-#define DEBUG_ASSERT(x)
+#define debug_print(...)
+#define debug_assert(x)
 #endif
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -67,9 +67,9 @@ static inline node_offset detect_offset(uint64_t pos, uint64_t num_leaves) {
     tr -= 1;
   }
   return (node_offset){
-      .bits = !marker,
-      .tree = bigger_trees,
-      .depth = (uint8_t)tr - nr,
+      .bits = pos,
+      .tree = (uint8_t)bigger_trees,
+      .depth = (uint8_t)(tr - nr),
   };
 }
 

@@ -34,6 +34,5 @@ void utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
   forest->data = file;
   forest->nLeaf = 0;
 
-  DEBUG_ASSERT(*(uint32_t *)(*file).map == MAGIC);
   *p = forest;
 }

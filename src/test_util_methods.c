@@ -20,8 +20,8 @@ void test_detect_row() {
 
 void test_detect_offset() {
   node_offset offset = detect_offset(0, 3);
-  ASSERT_EQ(offset.depth, 2);
-  ASSERT_EQ(offset.tree, 0);
+  ASSERT_EQ(offset.depth, 1);
+  ASSERT_EQ(offset.tree, 1);
   ASSERT_EQ(offset.bits, 1);
 }
 

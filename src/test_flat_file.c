@@ -78,6 +78,7 @@ utreexo_forest_node *test_create_nodes(struct utreexo_forest_file *file) {
       .left_child = left_child_pos,
       .right_child = right_child_pos,
   };
+
   TEST_END;
 
   return parent_pos;
