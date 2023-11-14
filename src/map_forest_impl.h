@@ -55,4 +55,75 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
   ++p->nLeaf;
 }
 
+static inline void grab_node(struct utreexo_forest *f,
+                             utreexo_forest_node **node,
+                             utreexo_forest_node **sibling,
+                             utreexo_forest_node **parent, uint64_t pos) {
+  node_offset offset = detect_offset(pos, f->nLeaf);
+
+  DEBUG_ASSERT(offset.tree < 64);
+
+  utreexo_forest_node *pnode = f->roots[offset.tree];
+  utreexo_forest_node *psibling = NULL;
+  utreexo_forest_node *pparent = NULL;
+
+  for (size_t h = 0; h < offset.depth; ++h) {
+    if (pnode->right_child == NULL)
+      break;
+
+    pparent = pnode;
+
+    if ((offset.bits >> h & 1) == 1) {
+      pnode = pparent->right_child;
+      psibling = pparent->left_child;
+    } else {
+      psibling = pparent->right_child;
+      pnode = pparent->right_child;
+    }
+  }
+
+  *node = pnode;
+  *sibling = psibling;
+  *parent = pparent;
+}
+
+void utreexo_forest_print(utreexo_forest_node *f) {
+  utreexo_forest_node **nodes;
+  *nodes = (utreexo_forest_node *)malloc(1024);
+  nodes[0] = f;
+
+  utreexo_forest_node *next[1000] = {0};
+  size_t i = 0;
+  do {
+    utreexo_forest_node *pnode = nodes[i];
+    if (pnode == NULL) {
+      printf("=====", pnode->hash.hash[0], pnode->hash.hash[1]);
+      next[i * 2] = NULL;
+      next[i * 2 + 1] = NULL;
+    }
+    printf("%02x%02x", pnode->hash.hash[0], pnode->hash.hash[1]);
+
+    next[i * 2] = pnode->left_child;
+    next[i * 2 + 1] = pnode->right_child;
+  } while (21);
+}
+static inline void delete_single(struct utreexo_forest *f, uint64_t pos) {
+  utreexo_forest_node *pnode, *psibling, *pparent;
+
+  node_offset offset = detect_offset(pos, f->nLeaf);
+  grab_node(f, &pnode, &psibling, &pparent, pos);
+
+  if (pparent == NULL)
+    f->roots[offset.tree] = NULL;
+
+  if (pparent->parent != NULL) {
+    if (pparent->parent->right_child == pparent)
+      pparent->parent->right_child = psibling;
+    else
+      pparent->parent->left_child = psibling;
+    return;
+  }
+  f->roots[offset.tree] = psibling;
+}
+
 #endif

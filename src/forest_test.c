@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "flat_file.h"
+#include "forest_node.h"
 #include "map_forest_impl.h"
 #include "parent_hash.h"
 #include "test_utils.h"
@@ -228,11 +229,37 @@ void test_from_test_cases(void) {
   TEST_END;
 }
 
+void test_grab_node() {
+  struct utreexo_forest_file *file = NULL;
+  utreexo_forest_file_init(&file, "test_grab_node.bin");
+
+  struct utreexo_forest p = {
+      .data = file,
+      .roots = {0},
+      .nLeaf = 0,
+  };
+
+  for (size_t i = 0; i < 15; ++i) {
+    utreexo_node_hash leaf = {.hash = {0}};
+    hash_from_u8(leaf.hash, i);
+    utreexo_forest_add(&p, leaf);
+  }
+
+  utreexo_forest_node *node = NULL, *sibling = NULL, *parent = NULL;
+  grab_node(&p, &node, &sibling, &parent, 4);
+  utreexo_forest_print(p.roots[1]);
+  for (size_t i = 0; i < 32; ++i)
+    printf("%02x", node->hash.hash[i]);
+
+  printf("\n");
+}
+
 int main() {
-  test_parent_hash();
-  test_add_single();
-  test_add_two();
-  test_add_many();
-  test_from_test_cases();
+  // test_parent_hash();
+  // test_add_single();
+  // test_add_two();
+  // test_add_many();
+  // test_from_test_cases();
+  test_grab_node();
   return 0;
 }
