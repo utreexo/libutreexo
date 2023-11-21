@@ -10,15 +10,14 @@
 #include "parent_hash.h"
 #include "test_utils.h"
 
-const static char expected_hash[][32] = {{0x00, 0x01, 0x02, 0x03},
+static const char expected_hash[][32] = {{0x00, 0x01, 0x02, 0x03},
                                          {0x00, 0x01, 0x02, 0x04},
                                          {0x00, 0x01, 0x02, 0x05}};
 // can we add stuff to the file?
 utreexo_forest_node *test_create_nodes(struct utreexo_forest_file *file);
 
 // can we get nodes back?
-void test_retrieve_nodes(struct utreexo_forest_file *file,
-                         const utreexo_forest_node *parent);
+void test_retrieve_nodes(const utreexo_forest_node *parent);
 // Can we delete stuff from the fale?
 void test_delete_nodes(struct utreexo_forest_file *file,
                        const utreexo_forest_node *parent_pos);
@@ -34,7 +33,7 @@ int main() {
   utreexo_forest_file_init(&file, "test.bin");
 
   const utreexo_forest_node *parent = test_create_nodes(file);
-  test_retrieve_nodes(file, parent);
+  test_retrieve_nodes(parent);
   test_delete_nodes(file, parent);
   utreexo_forest_file_close(file);
   test_add_many(NODES_PER_PAGE + 3);
@@ -83,6 +82,7 @@ utreexo_forest_node *test_create_nodes(struct utreexo_forest_file *file) {
 
   return parent_pos;
 }
+
 void test_delete_nodes(struct utreexo_forest_file *file,
                        const utreexo_forest_node *parent) {
   TEST_BEGIN("delete nodes");
@@ -95,8 +95,7 @@ void test_delete_nodes(struct utreexo_forest_file *file,
   TEST_END;
 }
 
-void test_retrieve_nodes(struct utreexo_forest_file *file,
-                         const utreexo_forest_node *parent) {
+void test_retrieve_nodes(const utreexo_forest_node *parent) {
   TEST_BEGIN("retrieve nodes");
 
   // check the parent node

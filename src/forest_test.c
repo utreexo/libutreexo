@@ -204,7 +204,7 @@ void test_from_test_cases(void) {
         .nLeaf = 0,
     };
 
-    for (int j = 0; j < tc->preimage_count; j++) {
+    for (size_t j = 0; j < tc->preimage_count; j++) {
       utreexo_node_hash leaf = {.hash = {0}};
       hash_from_u8(leaf.hash, tc->leaf_preimages[j]);
       utreexo_forest_add(&p, leaf);
@@ -212,7 +212,7 @@ void test_from_test_cases(void) {
 
     assert(p.nLeaf == tc->preimage_count);
 
-    size_t root = 63;
+    int root = 63;
 
     for (size_t j = 0; j < tc->expected_roots_len; ++j) {
       while (p.roots[root] == NULL && root >= 0)

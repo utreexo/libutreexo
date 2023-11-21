@@ -2,8 +2,8 @@
   do {                                                                         \
     if (a != b) {                                                              \
       printf("Assertion failed: %s != %s\n", #a, #b);                          \
-      printf("  %s = %08x\n", #a, (unsigned int)a);                            \
-      printf("  %s = %08x\n", #b, (unsigned int)b);                            \
+      printf("  %s = %016lx\n", #a, (unsigned long)a);                         \
+      printf("  %s = %016lx\n", #b, (unsigned long)b);                         \
       exit(1);                                                                 \
     }                                                                          \
   } while (0)

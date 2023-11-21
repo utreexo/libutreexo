@@ -99,8 +99,7 @@ static inline utreexo_forest_node *
 utreexo_forest_file_node_alloc(struct utreexo_forest_file *file);
 
 /* Initialize a new page */
-static inline void utreexo_forest_mkpg(struct utreexo_forest_file *file,
-                                       struct utreexo_forest_page_header *pg);
+static inline void utreexo_forest_mkpg(struct utreexo_forest_page_header *pg);
 
 static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file);
 #endif

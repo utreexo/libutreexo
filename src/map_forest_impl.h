@@ -99,8 +99,7 @@ static inline void utreexo_forest_free(struct utreexo_forest *forest) {
   free(forest);
 }
 
-static inline void recompute_parent_hash(struct utreexo_forest *f,
-                                         utreexo_forest_node *origin) {
+static inline void recompute_parent_hash(utreexo_forest_node *origin) {
   utreexo_forest_node *pnode = origin->parent;
   while (pnode != NULL) {
     parent_hash(pnode->hash.hash, pnode->left_child->hash.hash,

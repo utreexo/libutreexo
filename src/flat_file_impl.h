@@ -119,18 +119,17 @@ static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
   char *pg = (((char *)file->map) + PAGE_SIZE * page_offset);
   file->header->wrt_page = (struct utreexo_forest_page_header *)pg;
 
-  utreexo_forest_mkpg(file, file->header->wrt_page);
+  utreexo_forest_mkpg(file->header->wrt_page);
 
   debug_print("Allocated page %d\n", page_offset);
   debug_assert(file->header->wrt_page->n_nodes == 0);
-      debug_assert(file->header->wrt_page->pg_magic == MAGIC);
-          debug_assert(file->header->n_pages == page_offset + 1);
+  debug_assert(file->header->wrt_page->pg_magic == MAGIC);
+  debug_assert(file->header->n_pages == page_offset + 1);
 
-              return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
-static inline void utreexo_forest_mkpg(struct utreexo_forest_file *file,
-                                       struct utreexo_forest_page_header *pg) {
+static inline void utreexo_forest_mkpg(struct utreexo_forest_page_header *pg) {
   pg->pg_magic = MAGIC;
   pg->n_nodes = 0;
 

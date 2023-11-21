@@ -25,11 +25,6 @@ struct utreexo_forest {
 /* Adds one node to the forest. */
 static inline void utreexo_forest_add(struct utreexo_forest *p,
                                       utreexo_node_hash leaf);
-
-/* Removes one node from the forest */
-static inline void utreexo_forest_remove(struct utreexo_forest *p,
-                                         uint64_t leaf_number);
-
 /* Frees a forest. */
 static inline void utreexo_forest_free(struct utreexo_forest *p);
 
