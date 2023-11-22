@@ -77,9 +77,10 @@ static inline void grab_node(struct utreexo_forest *f,
 
     pparent = pnode;
 
-    if (pnode->right_child == NULL)
+    if (pnode->right_child == NULL) {
+      pnode = NULL;
       break;
-
+    }
     if (mask & pos) {
       pnode = pparent->right_child;
       psibling = pparent->left_child;
@@ -108,23 +109,30 @@ static inline void recompute_parent_hash(utreexo_forest_node *origin) {
   }
 }
 
-static inline void delete_single(struct utreexo_forest *f, uint64_t pos) {
+static inline int delete_single(struct utreexo_forest *f, uint64_t pos) {
   utreexo_forest_node *pnode, *psibling, *pparent;
 
   node_offset offset = detect_offset(pos, f->nLeaf);
   grab_node(f, &pnode, &psibling, &pparent, pos);
 
-  if (pparent == NULL)
+  if (!pnode)
+    return -1;
+
+  if (pparent == NULL) {
     f->roots[offset.tree] = NULL;
+    return 0;
+  }
 
   if (pparent->parent != NULL) {
     if (pparent->parent->right_child == pparent)
       pparent->parent->right_child = psibling;
     else
       pparent->parent->left_child = psibling;
-    return;
+  } else {
+    f->roots[offset.tree] = psibling;
   }
-  f->roots[offset.tree] = psibling;
+  recompute_parent_hash(psibling);
+  return 0;
 }
 
 #endif
