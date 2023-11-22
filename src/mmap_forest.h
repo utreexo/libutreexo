@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "flat_file_impl.h"
 #include "forest_node.h"
 #include "parent_hash.h"
@@ -39,6 +40,7 @@ static inline int delete_single(struct utreexo_forest *f, uint64_t pos);
 /* Walks up the tree and recompute the node hashes */
 static inline void recompute_parent_hash(utreexo_forest_node *origin);
 
+/* Gets a node, its sibling and parent, given a node's position */
 static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **node,
                              utreexo_forest_node **sibling,

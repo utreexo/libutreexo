@@ -2,18 +2,24 @@
 #define UTIL_H
 #include <stdint.h>
 
+#include "config.h"
+
 #ifdef DEBUG
 #define debug_print(...)                                                       \
   do {                                                                         \
     fprintf(stderr, __VA_ARGS__);                                              \
   } while (0)
+#else
+#define debug_print(...)
+#endif
+
+#ifdef TEST
 #define debug_assert(x)                                                        \
   if (!(x)) {                                                                  \
     fprintf(stderr, "Assertion failed: %s\n", #x);                             \
     exit(1);                                                                   \
   }
 #else
-#define debug_print(...)
 #define debug_assert(x)
 #endif
 

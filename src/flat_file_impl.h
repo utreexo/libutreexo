@@ -14,14 +14,6 @@
 #include "forest_node.h"
 #include "util.h"
 
-#define MAP_ORIGIN (void *)(1 << 20)
-
-#ifdef TEST
-#define MAP_SIZE 1024
-#else
-#define MAP_SIZE 1024 * 1024 * 1024
-#endif
-
 int posix_fallocate(int fd, off_t offset, off_t len);
 
 static inline void utreexo_forest_file_close(struct utreexo_forest_file *file) {

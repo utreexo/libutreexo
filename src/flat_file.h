@@ -26,9 +26,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include "config.h"
 #include "forest_node.h"
-
-#define NODES_PER_PAGE 10
 
 /* The size of a page minus the header */
 #define PAGE_DATA_SIZE (NODES_PER_PAGE * sizeof(utreexo_forest_node))
@@ -42,16 +41,6 @@
 
 /* Where the page starts */
 #define PAGE(data, n) ((char *)data) + PAGE_SIZE *n
-
-/* Magic values to check for consistency while running, if we have some weird
- * memory stuff going on, it may corrupt the page header, causing our program
- * to behave weirdely. We use this to make sure our headers are intact */
-
-/* Magic number for each page */
-#define MAGIC 0x45474150
-
-/* Magic number for the file */
-#define FILE_MAGIC 0x4f585455
 
 /* Heap is a space before the actual pages that can be used by consumer to
  * persist some data
