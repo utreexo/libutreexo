@@ -32,7 +32,7 @@ static inline void utreexo_forest_file_close(struct utreexo_forest_file *file) {
 }
 
 static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
-                                            const char *filename) {
+                                            void **heap, const char *filename) {
   debug_print("Openning file %s\n", filename);
 
   int fd = open(filename, O_RDWR | O_CREAT, 0644);
@@ -79,6 +79,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
     pfile->header->filesize = header_size;
     pfile->header->n_pages = 0;
+    memset(pfile->header->heap, 0x00, HEAP_AREA);
     pfile->header->fpg = NULL;
     pfile->header->magic = FILE_MAGIC;
     pfile->header->wrt_page =
@@ -92,7 +93,9 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
   debug_print("Found %d pages writting in %p\n", pfile->header->n_pages,
               pfile->header->wrt_page);
   *file = pfile;
+  *heap = pfile->header->heap;
 }
+
 static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
   debug_print("Grabbing a new page\n");
   // We have a free page

@@ -26,7 +26,7 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
       .hash = {{0}}, .parent = NULL, .left_child = NULL, .right_child = NULL};
   memcpy(pnode->hash.hash, leaf.hash, 32);
 
-  const uint64_t nLeaves = p->nLeaf;
+  const uint64_t nLeaves = *p->nLeaf;
   uint8_t height = 0;
 
   while ((nLeaves >> height & 1) == 1) {
@@ -51,14 +51,14 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
   }
   debug_assert(p->roots[height] == NULL);
   p->roots[height] = pnode;
-  ++p->nLeaf;
+  ++(*p->nLeaf);
 }
 
 static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **node,
                              utreexo_forest_node **sibling,
                              utreexo_forest_node **parent, uint64_t pos) {
-  node_offset offset = detect_offset(pos, f->nLeaf);
+  node_offset offset = detect_offset(pos, *f->nLeaf);
 
   debug_assert(offset.tree < 64);
 
@@ -112,7 +112,7 @@ static inline void recompute_parent_hash(utreexo_forest_node *origin) {
 static inline int delete_single(struct utreexo_forest *f, uint64_t pos) {
   utreexo_forest_node *pnode, *psibling, *pparent;
 
-  node_offset offset = detect_offset(pos, f->nLeaf);
+  node_offset offset = detect_offset(pos, *f->nLeaf);
   grab_node(f, &pnode, &psibling, &pparent, pos);
 
   if (!pnode)

@@ -9,6 +9,20 @@
 #include "parent_hash.h"
 #include "test_utils.h"
 
+static inline struct utreexo_forest get_test_forest(const char *filename) {
+  void *heap = NULL;
+  struct utreexo_forest_file *file = NULL;
+
+  utreexo_forest_file_init(&file, &heap, filename);
+  uint8_t *roots = ((uint8_t *)heap) + sizeof(uint64_t);
+  struct utreexo_forest p = {
+      .data = file,
+      .roots = (utreexo_forest_node **)(roots),
+      .nLeaf = heap,
+  };
+  return p;
+}
+
 typedef struct {
   uint8_t expected_roots[10][32];
   size_t expected_roots_len;
@@ -131,14 +145,14 @@ void test_add_single() {
   TEST_BEGIN("add_single");
   utreexo_node_hash leaf = {.hash = {0}};
   hash_from_u8(leaf.hash, 0);
-
+  void *heap = NULL;
   struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, "forest.bin");
+  utreexo_forest_file_init(&file, &heap, "add_single.bin");
 
   struct utreexo_forest p = {
       .data = file,
-      .roots = {0},
-      .nLeaf = 0,
+      .roots = (utreexo_forest_node **)(((uint8_t *)heap) + sizeof(uint64_t)),
+      .nLeaf = heap,
   };
   utreexo_forest_add(&p, leaf);
 
@@ -151,15 +165,7 @@ void test_add_two() {
   TEST_BEGIN("add_two");
   utreexo_node_hash leaf = {.hash = {0}};
   hash_from_u8(leaf.hash, 0);
-
-  struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, "forest.bin");
-
-  struct utreexo_forest p = {
-      .data = file,
-      .roots = {0},
-      .nLeaf = 0,
-  };
+  struct utreexo_forest p = get_test_forest("add_two.bin");
   utreexo_forest_add(&p, leaf);
   utreexo_forest_add(&p, leaf);
   utreexo_forest_node *root = p.roots[1];
@@ -179,14 +185,7 @@ void test_add_many() {
                           0x60, 0xe0, 0x13, 0x5d, 0x1e, 0x46, 0x61, 0xfc,
                           0x23, 0xce, 0xdc, 0x3a, 0xf4, 0x9d, 0xac, 0x42};
 
-  struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, "forest.bin");
-
-  struct utreexo_forest p = {
-      .data = file,
-      .roots = {0},
-      .nLeaf = 0,
-  };
+  struct utreexo_forest p = get_test_forest("add_many.bin");
   for (int i = 0; i < 8; i++) {
     utreexo_node_hash leaf = {.hash = {0}};
     hash_from_u8(leaf.hash, values[i]);
@@ -203,16 +202,11 @@ void test_from_test_cases(void) {
   TEST_BEGIN("rustreexo test suite");
   for (int i = 0; i < 4; i++) {
     const add_test_data *tc = &insertion_tests[i];
-    struct utreexo_forest_file *file = NULL;
     char filename[100] = {0};
 
     sprintf(filename, "forest_%d.bin", i);
-    utreexo_forest_file_init(&file, filename);
-    struct utreexo_forest p = {
-        .data = file,
-        .roots = {0},
-        .nLeaf = 0,
-    };
+
+    struct utreexo_forest p = get_test_forest(filename);
 
     for (size_t j = 0; j < tc->preimage_count; j++) {
       utreexo_node_hash leaf = {.hash = {0}};
@@ -220,7 +214,7 @@ void test_from_test_cases(void) {
       utreexo_forest_add(&p, leaf);
     }
 
-    assert(p.nLeaf == tc->preimage_count);
+    assert(*p.nLeaf == tc->preimage_count);
 
     int root = 63;
 
@@ -241,17 +235,11 @@ void test_from_test_cases(void) {
 
 void test_grab_node() {
   TEST_BEGIN("grab node");
-  struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, "test_grab_node.bin");
+  struct utreexo_forest p = get_test_forest("grab_node.bin");
   const unsigned char *expected = (unsigned char[]){
       0xe7, 0x7b, 0x9a, 0x9a, 0xe9, 0xe3, 0x0b, 0x0d, 0xbd, 0xb6, 0xf5,
       0x10, 0xa2, 0x64, 0xef, 0x9d, 0xe7, 0x81, 0x50, 0x1d, 0x7b, 0x6b,
       0x92, 0xae, 0x89, 0xeb, 0x05, 0x9c, 0x5a, 0xb7, 0x43, 0xdb};
-  struct utreexo_forest p = {
-      .data = file,
-      .roots = {0},
-      .nLeaf = 0,
-  };
 
   for (size_t i = 0; i < 8; ++i) {
     utreexo_node_hash leaf = {.hash = {0}};
@@ -266,18 +254,12 @@ void test_grab_node() {
 }
 
 void test_delete_some() {
-  TEST_BEGIN("delete single");
-  struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, "test_delete_some.bin");
+  TEST_BEGIN("delete some");
+  struct utreexo_forest p = get_test_forest("delete_some.bin");
   const uint8_t expected_root[32] = {
       0x55, 0xe9, 0x91, 0x3e, 0xda, 0xc7, 0x5c, 0xbf, 0x92, 0x30, 0x1c,
       0xe5, 0xf9, 0x95, 0xdf, 0x40, 0xd1, 0xe9, 0x3c, 0x0d, 0xde, 0x87,
       0x91, 0xbd, 0x75, 0x7a, 0x0f, 0x28, 0xbc, 0x02, 0xf4, 0xa5};
-  struct utreexo_forest p = {
-      .data = file,
-      .roots = {0},
-      .nLeaf = 0,
-  };
 
   for (size_t i = 0; i < 8; ++i) {
     utreexo_node_hash leaf = {.hash = {0}};
@@ -395,21 +377,22 @@ void test_deletion_cases() {
   size_t n_tests = sizeof(test_cases) / sizeof(deletion_test_data);
   for (test_case = &test_cases[0]; test_case != (test_cases + n_tests);
        ++test_case) {
-    struct utreexo_forest_file *file = NULL;
-    utreexo_forest_file_init(&file, "test_deletion_cases.bin");
-    struct utreexo_forest p = {
-        .data = file,
-        .roots = {0},
-        .nLeaf = 0,
-    };
+
+    char filename[100] = {0};
+    sprintf(filename, "test_deletion_cases%ld.bin", test_case - test_cases);
+
+    struct utreexo_forest p = get_test_forest(filename);
+
     for (size_t i = 0; i < test_case->preimage_count; ++i) {
       utreexo_node_hash leaf = {.hash = {0}};
       hash_from_u8(leaf.hash, test_case->leaf_preimages[i]);
       utreexo_forest_add(&p, leaf);
     }
+
     for (size_t i = 0; i < test_case->n_target_values; ++i) {
       delete_single(&p, test_case->target_values[i]);
     }
+
     size_t n_mached = 0;
     size_t expected_root_ctr = 0;
     for (int root = 63; root >= 0; --root) {

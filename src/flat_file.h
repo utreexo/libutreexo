@@ -53,6 +53,11 @@
 /* Magic number for the file */
 #define FILE_MAGIC 0x4f585455
 
+/* Heap is a space before the actual pages that can be used by consumer to
+ * persist some data
+ */
+#define HEAP_AREA 64 * sizeof(void *) + sizeof(uint64_t)
+
 /* An entry in our free pages list, we use this to keep track of unused pages
  * that can be reused in future additions */
 typedef struct utreexo_forest_free_page {
@@ -83,6 +88,7 @@ struct utreexo_forest_file_header {
   struct utreexo_forest_page_header *wrt_page; // Which page are we on
   uint32_t n_pages;
   uint64_t filesize;
+  char heap[HEAP_AREA];          // used for api consumers to store data
   utreexo_forest_free_page *fpg; // The first free page
 } __attribute__((__packed__));
 
@@ -92,7 +98,7 @@ static inline void utreexo_forest_file_close(struct utreexo_forest_file *file);
 /* Initialize the file, and map it to memory. Creates the file if it doesn't
  * exist */
 static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
-                                            const char *filename);
+                                            void **heap, const char *filename);
 
 /* Allocs a new node and returns a pointer to it */
 static inline utreexo_forest_node *
@@ -101,5 +107,12 @@ utreexo_forest_file_node_alloc(struct utreexo_forest_file *file);
 /* Initialize a new page */
 static inline void utreexo_forest_mkpg(struct utreexo_forest_page_header *pg);
 
+/* Allocate a new page.
+ *
+ * This allocation uses a free-list to find empty pages and reuse them.
+ * If we have a free page, we'll reallocate that page, otherwise we resize
+ * our file and append a new page at the end.
+ */
 static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file);
+
 #endif

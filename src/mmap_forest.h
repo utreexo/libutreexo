@@ -18,14 +18,14 @@
 
 struct utreexo_forest {
   struct utreexo_forest_file *data;
-  utreexo_forest_node *roots[64];
-  uint64_t nLeaf;
+  utreexo_forest_node **roots;
+  uint64_t *nLeaf;
 };
 
 /* Adds one node to the forest. */
 static inline void utreexo_forest_add(struct utreexo_forest *p,
                                       utreexo_node_hash leaf);
-/* Frees a forest. */
+/* Free up a forest. */
 static inline void utreexo_forest_free(struct utreexo_forest *p);
 
 /* Deletes a single node from a forest.

@@ -57,7 +57,9 @@
 /**
  * A utreexo node hash. This is just a 32-byte array.
  */
-typedef utreexo_node_hash uint8_t hash[32];
+typedef struct {
+  uint8_t data[32];
+} utreexo_node_hash;
 
 /**
  * A utreexo forest. This is the main type of this module. It represents a
@@ -97,7 +99,8 @@ extern void utreexo_forest_init(utreexo_forest *p, const char *filename);
  *       leaf_count: The number of leaves that should be added/removed
  */
 extern void utreexo_forest_modify(utreexo_forest forest,
-                                  utreexo_node_hash *leaf, int leaf_count);
+                                  utreexo_node_hash *utxos, int utxo_count,
+                                  utreexo_node_hash *stxos, int stxo_count);
 
 /**
  * Prove that some elements are in the forest. This function takes as input
@@ -109,5 +112,4 @@ extern void utreexo_forest_modify(utreexo_forest forest,
  */
 static void utreexo_forest_prove(utreexo_forest forest, utreexo_node_hash *leaf,
                                  int leaf_count, utreexo_node_hash *proof);
-
 #endif
