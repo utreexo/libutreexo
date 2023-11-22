@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -W -g -pedantic -std=c99
+CFLAGS=-Wall -W -g -pedantic -std=c99 -Ofast
 
 all: build-release
 
@@ -26,4 +26,4 @@ clean:
 	@echo "Cleaning up..."
 	@rm forest_tests *.bin flat_file*
 
-build: build-debug
+build: build-release

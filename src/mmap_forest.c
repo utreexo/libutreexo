@@ -28,11 +28,11 @@ void utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
 
   struct utreexo_forest *forest = malloc(sizeof(struct utreexo_forest));
   struct utreexo_forest_file *file = NULL;
-
-  utreexo_forest_file_init(&file, filename);
+  char *heap;
+  utreexo_forest_file_init(&file, (void **)&heap, filename);
 
   forest->data = file;
-  forest->nLeaf = 0;
-
+  forest->nLeaf = (uint64_t *)heap;
+  forest->roots = (utreexo_forest_node **)(heap + sizeof(uint64_t));
   *p = forest;
 }
