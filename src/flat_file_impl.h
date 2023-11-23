@@ -47,9 +47,9 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   const int fsize = lseek(fd, 0, SEEK_END);
 
-  char *data = (char *)mmap((void *)MAP_ORIGIN, MAP_SIZE,
-                            PROT_READ | PROT_WRITE | PROT_GROWSUP,
-                            MAP_FILE | MAP_SHARED | MAP_FIXED, fd, 0);
+  char *data =
+      (char *)mmap((void *)MAP_ORIGIN, MAP_SIZE, PROT_READ | PROT_WRITE,
+                   MAP_FILE | MAP_SHARED | MAP_FIXED, fd, 0);
 
   if (data == MAP_FAILED || data != (void *)MAP_ORIGIN) {
     perror("mmap");
