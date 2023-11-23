@@ -27,6 +27,10 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
                                             void **heap, const char *filename) {
   debug_print("Openning file %s\n", filename);
 
+  /* Makes sure we won't fight our MMU */
+  debug_assert((uint128_t)MAP_ORIGIN < sizeof(void *));
+  debug_assert((uint128_t)MAP_ORIGIN + MAP_SIZE < sizeof(void *));
+
   int fd = open(filename, O_RDWR | O_CREAT, 0644);
 
   if (fd < 0) {
@@ -43,11 +47,11 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   const int fsize = lseek(fd, 0, SEEK_END);
 
-  char *data =
-      (char *)mmap(MAP_ORIGIN, MAP_SIZE, PROT_READ | PROT_WRITE | PROT_GROWSUP,
-                   MAP_FILE | MAP_SHARED | MAP_FIXED, fd, 0);
+  char *data = (char *)mmap((void *)MAP_ORIGIN, MAP_SIZE,
+                            PROT_READ | PROT_WRITE | PROT_GROWSUP,
+                            MAP_FILE | MAP_SHARED | MAP_FIXED, fd, 0);
 
-  if (data == MAP_FAILED || data != MAP_ORIGIN) {
+  if (data == MAP_FAILED || data != (void *)MAP_ORIGIN) {
     perror("mmap");
     exit(1);
   }
