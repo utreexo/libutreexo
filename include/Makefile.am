@@ -1,3 +1,3 @@
-headers = utreexo.h
+headers = utreexo.h utreexo.hpp
 
-              include_HEADERS = $(headers)
+include_HEADERS = $(headers)

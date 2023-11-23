@@ -13,26 +13,37 @@ static const int utreexo_forest_version_major = 0;
 
 #define CHECK_PTR(x)                                                           \
   if (x == NULL) {                                                             \
-    errno = -1;                                                                \
-    return;                                                                    \
+    return 1;                                                                  \
   }
 
-void utreexo_forest_modify(struct utreexo_forest *forest,
-                           utreexo_node_hash *leaf, int leaf_count) {
+int utreexo_forest_modify(struct utreexo_forest *forest,
+                          utreexo_node_hash *leaf, int leaf_count) {
+
   for (int i = 0; i < leaf_count; i++) {
     utreexo_forest_add(forest, leaf[i]);
   }
+
+  return 1;
+}
+int utreexo_forest_free(struct utreexo_forest *p) {
+  _utreexo_forest_free(p);
+  return 0;
 }
 
-void utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
+int utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
+  CHECK_PTR(p);
+  CHECK_PTR(filename);
 
   struct utreexo_forest *forest = malloc(sizeof(struct utreexo_forest));
   struct utreexo_forest_file *file = NULL;
   char *heap;
+
   utreexo_forest_file_init(&file, (void **)&heap, filename);
 
   forest->data = file;
   forest->nLeaf = (uint64_t *)heap;
   forest->roots = (utreexo_forest_node **)(heap + sizeof(uint64_t));
+
   *p = forest;
+  return 0;
 }

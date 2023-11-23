@@ -52,6 +52,10 @@
 #ifndef UTREEXO_H
 #define UTREEXO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 /**
@@ -81,11 +85,23 @@ typedef struct utreexo_forest_ *utreexo_forest;
  * forest can have up to 64 trees (which is more than enough for most use
  * cases).
  *
+ * This method returns 0 if everything goes Ok, 1 otherwise.
+ *
  * Out:         p: The newly created forest
  * In:   filename: File name of the forest backend. If the file doesn't exist,
  *                 it'll be created.
  */
-extern void utreexo_forest_init(utreexo_forest *p, const char *filename);
+extern int utreexo_forest_init(utreexo_forest *p, const char *filename);
+
+/**
+ * Frees-up a forest. This method should be called when you're done with
+ * the forest, otherwise may cause resource leak.
+ *
+ * This method doesn't fail.
+ *
+ * In:  p: A valid forest that have been innitialized using utreexo_forest_init
+ */
+extern int utreexo_forest_free(utreexo_forest p);
 
 /**
  * Modify is the main interface for a utreexo forest. Because order matters
@@ -94,13 +110,15 @@ extern void utreexo_forest_init(utreexo_forest *p, const char *filename);
  * takes as arguments the leaf that should be added/removed, and the number of
  * leaves for each operation.
  *
+ * This method returns 0 if everything goes Ok, 1 otherwise.
+ *
  * Out:           p: The newly created forest
  * In:         leaf: The leaf that should be added
  *       leaf_count: The number of leaves that should be added/removed
  */
-extern void utreexo_forest_modify(utreexo_forest forest,
-                                  utreexo_node_hash *utxos, int utxo_count,
-                                  utreexo_node_hash *stxos, int stxo_count);
+extern int utreexo_forest_modify(utreexo_forest forest,
+                                 utreexo_node_hash *utxos, int utxo_count,
+                                 utreexo_node_hash *stxos, int stxo_count);
 
 /**
  * Prove that some elements are in the forest. This function takes as input
@@ -110,6 +128,10 @@ extern void utreexo_forest_modify(utreexo_forest forest,
  * In:         leaf: The leaf that should be added
  *       leaf_count: The number of leaves that should be added/removed
  */
-static void utreexo_forest_prove(utreexo_forest forest, utreexo_node_hash *leaf,
-                                 int leaf_count, utreexo_node_hash *proof);
+static int utreexo_forest_prove(utreexo_forest forest, utreexo_node_hash *leaf,
+                                int leaf_count, utreexo_node_hash *proof);
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
 #endif

@@ -95,7 +95,7 @@ static inline void grab_node(struct utreexo_forest *f,
   *parent = pparent;
 }
 
-static inline void utreexo_forest_free(struct utreexo_forest *forest) {
+static inline void _utreexo_forest_free(struct utreexo_forest *forest) {
   utreexo_forest_file_close(forest->data);
   free(forest);
 }
