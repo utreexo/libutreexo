@@ -110,12 +110,12 @@ static inline int utreexo_forest_page_alloc(struct utreexo_forest_file *file) {
 
   const int page_offset = file->header->n_pages;
   file->header->n_pages++;
-  file->header->filesize += PAGE_SIZE;
+  file->header->filesize += utreexo_page_size();
 
   posix_fallocate(file->fd, file->header->filesize,
-                  (PAGE_SIZE)*file->header->n_pages);
+                  (utreexo_page_size()) * file->header->n_pages);
 
-  char *pg = (((char *)file->map) + PAGE_SIZE * page_offset);
+  char *pg = (((char *)file->map) + utreexo_page_size() * page_offset);
   file->header->wrt_page = (struct utreexo_forest_page_header *)pg;
 
   utreexo_forest_mkpg(file->header->wrt_page);
@@ -159,10 +159,10 @@ utreexo_forest_file_node_alloc(struct utreexo_forest_file *file) {
 static inline void
 utreexo_forest_file_node_del(struct utreexo_forest_file *file,
                              const utreexo_forest_node *node) {
-  uint64_t npage = ((uint64_t)((char *)node - file->map)) / PAGE_SIZE;
+  uint64_t npage = ((uint64_t)((char *)node - file->map)) / utreexo_page_size();
 
   struct utreexo_forest_page_header *pg =
-      (struct utreexo_forest_page_header *)PAGE(file->map, npage);
+      (struct utreexo_forest_page_header *)utreexo_page(file->map, npage);
 
   debug_print("Deleting node from page %d remaining: %u\n", npage, pg->n_nodes);
   debug_assert(pg->n_nodes != 0);
@@ -173,7 +173,7 @@ utreexo_forest_file_node_del(struct utreexo_forest_file *file,
     --file->header->n_pages;
     utreexo_forest_free_page *pg = file->header->fpg;
     utreexo_forest_free_page *npg =
-        (utreexo_forest_free_page *)PAGE(file->map, npage);
+        (utreexo_forest_free_page *)utreexo_page(file->map, npage);
     npg->next = NULL;
 
     // This is the first free page

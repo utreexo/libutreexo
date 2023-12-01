@@ -29,19 +29,6 @@
 #include "config.h"
 #include "forest_node.h"
 
-/* The size of a page minus the header */
-#define PAGE_DATA_SIZE (NODES_PER_PAGE * sizeof(utreexo_forest_node))
-
-/* The size of a page, including header */
-#define PAGE_SIZE (PAGE_DATA_SIZE + sizeof(struct utreexo_forest_page_header))
-
-/* The position of the data in a page */
-#define PAGE_DATA(data, n)                                                     \
-  ((char *)data) + PAGE_SIZE *n + sizeof(struct utreexo_forest_page_header)
-
-/* Where the page starts */
-#define PAGE(data, n) ((char *)data) + PAGE_SIZE *n
-
 /* Heap is a space before the actual pages that can be used by consumer to
  * persist some data
  */
@@ -80,6 +67,29 @@ struct utreexo_forest_file_header {
   char heap[HEAP_AREA];          // used for api consumers to store data
   utreexo_forest_free_page *fpg; // The first free page
 } __attribute__((__packed__));
+
+/* The size of a page minus it's header */
+const inline uint64_t utreexo_page_data_size() {
+  return NODES_PER_PAGE * sizeof(utreexo_forest_node);
+}
+
+/* The size of a whole page */
+const inline uint64_t utreexo_page_size() {
+  return utreexo_page_data_size() + sizeof(struct utreexo_forest_page_header);
+}
+
+/* A pointer to the page's data (excludes the header) */
+const inline utreexo_forest_node *utreexo_page_data(char *data, size_t n) {
+  return (utreexo_forest_node *)(data + (utreexo_page_size() * n) +
+                                 sizeof(struct utreexo_forest_page_header));
+}
+
+/* A pointer to the page's data */
+const inline struct utreexo_forest_page_header *utreexo_page(char *data,
+                                                             size_t n) {
+  return (struct utreexo_forest_page_header *)(data +
+                                               (utreexo_page_size() * n));
+}
 
 /* Close the file, and free the memory */
 static inline void utreexo_forest_file_close(struct utreexo_forest_file *file);
