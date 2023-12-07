@@ -5,6 +5,7 @@
 
 #include "flat_file.h"
 #include "forest_node.h"
+#include "leaf_map.h"
 #include "map_forest_impl.h"
 #include "parent_hash.h"
 #include "test_utils.h"
@@ -15,8 +16,16 @@ static inline struct utreexo_forest get_test_forest(const char *filename) {
 
   utreexo_forest_file_init(&file, &heap, filename);
   uint8_t *roots = ((uint8_t *)heap) + sizeof(uint64_t);
+
+  char map_name[100];
+  sprintf(map_name, "map_%s", filename);
+
+  utreexo_leaf_map map;
+  utreexo_leaf_map_new(&map, map_name, O_CREAT | O_RDWR);
+
   struct utreexo_forest p = {
       .data = file,
+      .leaf_map = map,
       .roots = (utreexo_forest_node **)(roots),
       .nLeaf = heap,
   };
@@ -145,12 +154,17 @@ void test_add_single() {
   TEST_BEGIN("add_single");
   utreexo_node_hash leaf = {.hash = {0}};
   hash_from_u8(leaf.hash, 0);
+
   void *heap = NULL;
   struct utreexo_forest_file *file = NULL;
   utreexo_forest_file_init(&file, &heap, "add_single.bin");
 
+  utreexo_leaf_map leaf_map;
+  utreexo_leaf_map_new(&leaf_map, "leaves_single.bin", O_CREAT | O_RDWR);
+
   struct utreexo_forest p = {
       .data = file,
+      .leaf_map = leaf_map,
       .roots = (utreexo_forest_node **)(((uint8_t *)heap) + sizeof(uint64_t)),
       .nLeaf = heap,
   };
@@ -194,6 +208,32 @@ void test_add_many() {
   utreexo_forest_node *root = p.roots[3];
 
   ASSERT_ARRAY_EQ(root->hash.hash, expected, 32);
+  TEST_END;
+}
+
+void test_delete_with_map() {
+  TEST_BEGIN("delete with map");
+  const unsigned char expected_root[] = {
+      0x72, 0x6f, 0xdd, 0x3b, 0x43, 0x2c, 0xc5, 0x9e, 0x68, 0x48, 0x7d,
+      0x12, 0x6e, 0x70, 0xf0, 0xdb, 0x74, 0xa2, 0x36, 0x26, 0x7f, 0x8d,
+      0xae, 0xae, 0x30, 0xb3, 0x18, 0x39, 0xa4, 0xe7, 0xeb, 0xed};
+  struct utreexo_forest p = get_test_forest("delete_with_map.bin");
+  uint8_t values[] = {0, 1, 2, 3, 4, 5, 6, 7};
+  for (int i = 0; i < 8; i++) {
+    utreexo_node_hash leaf = {.hash = {0}};
+    hash_from_u8(leaf.hash, values[i]);
+    utreexo_forest_add(&p, leaf);
+  }
+
+  utreexo_node_hash leaf = {.hash = {0}};
+  hash_from_u8(leaf.hash, values[0]);
+
+  utreexo_forest_node *pnode = NULL;
+  utreexo_leaf_map_get(&p.leaf_map, &pnode, leaf);
+  delete_single(&p, pnode);
+
+  ASSERT_ARRAY_EQ(expected_root, p.roots[3]->hash.hash, 32);
+
   TEST_END;
 }
 
@@ -267,9 +307,10 @@ void test_delete_some() {
     utreexo_forest_add(&p, leaf);
   }
 
-  delete_single(&p, 0);
-  delete_single(&p, 2);
-  delete_single(&p, 9);
+  delete_single_pos(&p, 0);
+  delete_single_pos(&p, 2);
+  delete_single_pos(&p, 9);
+
   ASSERT_ARRAY_EQ(p.roots[3]->hash.hash, expected_root, 32);
   TEST_END;
 }
@@ -390,7 +431,7 @@ void test_deletion_cases() {
     }
 
     for (size_t i = 0; i < test_case->n_target_values; ++i) {
-      delete_single(&p, test_case->target_values[i]);
+      delete_single_pos(&p, test_case->target_values[i]);
     }
 
     size_t n_mached = 0;
@@ -420,5 +461,7 @@ int main() {
   test_grab_node();
   test_delete_some();
   test_deletion_cases();
+  test_delete_with_map();
+
   return 0;
 }

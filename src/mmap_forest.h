@@ -14,10 +14,12 @@
 #include "config.h"
 #include "flat_file_impl.h"
 #include "forest_node.h"
+#include "leaf_map.h"
 #include "parent_hash.h"
 #include "util.h"
 
 struct utreexo_forest {
+  utreexo_leaf_map leaf_map;
   struct utreexo_forest_file *data;
   utreexo_forest_node **roots;
   uint64_t *nLeaf;
@@ -29,13 +31,16 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
 /* Free up a forest. */
 static inline void _utreexo_forest_free(struct utreexo_forest *p);
 
-/* Deletes a single node from a forest.
+/* Deletes a single node from a forest. Requires a pointer to the actual node.
  *
  * This function returns an integer representing whether the operations was
  * successful. 0 means success, -1 means this node doesn't exist in the current
  * forest
  */
-static inline int delete_single(struct utreexo_forest *f, uint64_t pos);
+static inline int delete_single(struct utreexo_forest *f,
+                                utreexo_forest_node *pnode);
+
+static inline int delete_single_pos(struct utreexo_forest *f, uint64_t pos);
 
 /* Walks up the tree and recompute the node hashes */
 static inline void recompute_parent_hash(utreexo_forest_node *origin);
@@ -45,4 +50,9 @@ static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **node,
                              utreexo_forest_node **sibling,
                              utreexo_forest_node **parent, uint64_t pos);
+
+static inline int delete_inner(struct utreexo_forest *f,
+                               utreexo_forest_node *pnode,
+                               utreexo_forest_node *psibling,
+                               utreexo_forest_node *pparent);
 #endif // MMAP_FOREST_H

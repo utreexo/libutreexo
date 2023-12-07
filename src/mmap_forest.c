@@ -16,15 +16,34 @@ static const int utreexo_forest_version_major = 0;
     return 1;                                                                  \
   }
 
-int utreexo_forest_modify(struct utreexo_forest *forest,
-                          utreexo_node_hash *leaf, int leaf_count) {
+#define CHECK_PTR_VAR(x, n)                                                    \
+  if (n > 0 && x == NULL)                                                      \
+    return -1;
 
-  for (int i = 0; i < leaf_count; i++) {
-    utreexo_forest_add(forest, leaf[i]);
+extern int utreexo_forest_modify(struct utreexo_forest *forest,
+                                 utreexo_node_hash *utxos, int utxo_count,
+                                 utreexo_node_hash *stxos, int stxo_count) {
+  CHECK_PTR(forest);
+  CHECK_PTR_VAR(utxos, utxo_count);
+  CHECK_PTR_VAR(stxos, stxo_count);
+
+  for (size_t utxo = 0; utxo < utxo_count; ++utxo) {
+    utreexo_forest_node *pnode = NULL;
+    utreexo_leaf_map_get(&forest->leaf_map, &pnode, utxos[utxo]);
+    if (pnode == NULL)
+      return -3;
+    if (delete_single(forest, pnode)) {
+      return -2;
+    }
+  }
+
+  for (size_t i = 0; i < utxo_count; i++) {
+    utreexo_forest_add(forest, utxos[i]);
   }
 
   return 1;
 }
+
 int utreexo_forest_free(struct utreexo_forest *p) {
   _utreexo_forest_free(p);
   return 0;

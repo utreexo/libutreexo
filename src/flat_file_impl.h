@@ -40,6 +40,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
 
   struct utreexo_forest_file *pfile =
       (struct utreexo_forest_file *)malloc(sizeof(struct utreexo_forest_file));
+
   if (pfile == NULL) {
     perror("malloc");
     exit(1);

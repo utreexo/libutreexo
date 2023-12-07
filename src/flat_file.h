@@ -58,7 +58,7 @@ struct utreexo_forest_file {
 
 /* Things we need to keep through different sessions, they are persisted at the
  * beginning of a file
- * */
+ */
 struct utreexo_forest_file_header {
   uint64_t magic;
   struct utreexo_forest_page_header *wrt_page; // Which page are we on
@@ -69,26 +69,24 @@ struct utreexo_forest_file_header {
 } __attribute__((__packed__));
 
 /* The size of a page minus it's header */
-const inline uint64_t utreexo_page_data_size() {
+static inline uint64_t utreexo_page_data_size() {
   return NODES_PER_PAGE * sizeof(utreexo_forest_node);
 }
 
 /* The size of a whole page */
-const inline uint64_t utreexo_page_size() {
+static inline uint64_t utreexo_page_size() {
   return utreexo_page_data_size() + sizeof(struct utreexo_forest_page_header);
 }
 
 /* A pointer to the page's data (excludes the header) */
-const inline utreexo_forest_node *utreexo_page_data(char *data, size_t n) {
+static inline utreexo_forest_node *utreexo_page_data(char *data, size_t n) {
   return (utreexo_forest_node *)(data + (utreexo_page_size() * n) +
                                  sizeof(struct utreexo_forest_page_header));
 }
 
 /* A pointer to the page's data */
-const inline struct utreexo_forest_page_header *utreexo_page(char *data,
-                                                             size_t n) {
-  return (struct utreexo_forest_page_header *)(data +
-                                               (utreexo_page_size() * n));
+static inline void *utreexo_page(char *data, size_t n) {
+  return (void *)(data + (utreexo_page_size() * n));
 }
 
 /* Close the file, and free the memory */
