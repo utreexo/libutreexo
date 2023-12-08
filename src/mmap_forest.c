@@ -1,7 +1,3 @@
-static const int utreexo_forest_version_patch = 0;
-static const int utreexo_forest_version_minor = 1;
-static const int utreexo_forest_version_major = 0;
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,12 +40,12 @@ extern int utreexo_forest_modify(struct utreexo_forest *forest,
   return 1;
 }
 
-int utreexo_forest_free(struct utreexo_forest *p) {
+extern int utreexo_forest_free(struct utreexo_forest *p) {
   _utreexo_forest_free(p);
   return 0;
 }
 
-int utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
+extern int utreexo_forest_init(struct utreexo_forest **p, const char *filename) {
   CHECK_PTR(p);
   CHECK_PTR(filename);
 

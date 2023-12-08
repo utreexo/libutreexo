@@ -40,6 +40,7 @@ static inline void _utreexo_forest_free(struct utreexo_forest *p);
 static inline int delete_single(struct utreexo_forest *f,
                                 utreexo_forest_node *pnode);
 
+/* Deletes a node given its position */
 static inline int delete_single_pos(struct utreexo_forest *f, uint64_t pos);
 
 /* Walks up the tree and recompute the node hashes */
@@ -51,6 +52,7 @@ static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **sibling,
                              utreexo_forest_node **parent, uint64_t pos);
 
+/* A utility that implements the actual deletion code, and it's used by delete_single_* */
 static inline int delete_inner(struct utreexo_forest *f,
                                utreexo_forest_node *pnode,
                                utreexo_forest_node *psibling,
