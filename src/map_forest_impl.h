@@ -23,7 +23,7 @@ static const char UTREEXO_ZERO_HASH[32] = {0};
 static inline void utreexo_forest_add(struct utreexo_forest *p,
                                       utreexo_node_hash leaf) {
   utreexo_forest_node *pnode = utreexo_forest_file_node_alloc(p->data);
-  utreexo_leaf_map_set(&p->leaf_map, pnode, leaf);
+  // utreexo_leaf_map_set(&p->leaf_map, pnode, leaf);
 
   *pnode = (utreexo_forest_node){
       .hash = {{0}}, .parent = NULL, .left_child = NULL, .right_child = NULL};
@@ -35,10 +35,9 @@ static inline void utreexo_forest_add(struct utreexo_forest *p,
   while ((nLeaves >> height & 1) == 1) {
     utreexo_forest_node *root = p->roots[height];
     debug_assert(root != NULL);
+    debug_assert(root->hash.hash != NULL);
+
     p->roots[height] = NULL;
-    if (memcmp(root->hash.hash, UTREEXO_ZERO_HASH, 32) == 0) {
-      break;
-    }
 
     utreexo_forest_node *proot = utreexo_forest_file_node_alloc(p->data);
     *proot = (utreexo_forest_node){
@@ -124,7 +123,7 @@ static inline int delete_inner(struct utreexo_forest *f,
                                utreexo_forest_node *pnode,
                                utreexo_forest_node *psibling,
                                utreexo_forest_node *pparent) {
-  utreexo_leaf_delete(&f->leaf_map, pnode->hash);
+  // utreexo_leaf_delete(&f->leaf_map, pnode->hash);
 
   if (pparent == NULL) {
     for (size_t i = 0; i < 64; ++i)

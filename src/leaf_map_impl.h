@@ -24,7 +24,7 @@ static inline void utreexo_leaf_map_new(utreexo_leaf_map *map,
   int fd = open(filename, flags, 0666);
   if (fd == -1) {
     perror("open");
-    exit(EXIT_FAILURE);
+    abort();
   }
 
   lseek(fd, 0xff, SEEK_SET);
@@ -66,7 +66,7 @@ static inline void utreexo_leaf_map_set(utreexo_leaf_map *map,
   do {
     position = hash(key) * sizeof(utreexo_forest_node **);
     lseek(map->fd, position, SEEK_SET);
-    read(map->fd, pnode, sizeof(utreexo_forest_node **));
+    read(map->fd, &pnode, sizeof(utreexo_forest_node **));
     ++(*(unsigned int *)&key[32]);
   } while (pnode != NULL);
 

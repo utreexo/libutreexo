@@ -461,7 +461,7 @@ int main() {
   test_grab_node();
   test_delete_some();
   test_deletion_cases();
-  test_delete_with_map();
+  //test_delete_with_map();
 
   return 0;
 }

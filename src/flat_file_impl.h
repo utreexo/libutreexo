@@ -49,10 +49,10 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
   const int fsize = lseek(fd, 0, SEEK_END);
 
   char *data =
-      (char *)mmap((void *)MAP_ORIGIN, MAP_SIZE, PROT_READ | PROT_WRITE,
-                   MAP_FILE | MAP_SHARED | MAP_FIXED, fd, 0);
+      (char *)mmap(NULL, 1024 * 1024, PROT_READ | PROT_WRITE | PROT_GROWSUP,
+                   MAP_FILE | MAP_SHARED, fd, 0);
 
-  if (data == MAP_FAILED || data != (void *)MAP_ORIGIN) {
+  if (data == MAP_FAILED /*|| data != (void *)MAP_ORIGIN*/) {
     perror("mmap");
     exit(1);
   }
@@ -133,7 +133,6 @@ static inline void utreexo_forest_mkpg(struct utreexo_forest_page_header *pg) {
   pg->pg_magic = MAGIC;
   pg->n_nodes = 0;
 
-  debug_print("Initialized page %d\n", file->header->n_pages - 1);
   debug_assert(pg->n_nodes == 0) debug_assert(pg->pg_magic == MAGIC)
 }
 
@@ -148,11 +147,13 @@ utreexo_forest_file_node_alloc(struct utreexo_forest_file *file) {
     }
     page_nodes = 0; // we've just created a new page
   }
-  debug_print("Writing node %d to page %d offset=%d\n", page_nodes,
+
+  debug_print("Writing node %ul to page %d offset=%d\n", page_nodes,
               file->header->n_pages - 1,
-              page_nodes / sizeof(utreexo_forest_node));
-  utreexo_forest_node *ptr =
-      (utreexo_forest_node *)((char *)file->header->wrt_page + 16) + page_nodes;
+              page_nodes * sizeof(utreexo_forest_node));
+
+  utreexo_forest_node *ptr = (utreexo_forest_node *)((char *)file->header->wrt_page + 16) + page_nodes;
+  
   ++(file->header->wrt_page->n_nodes);
   return ptr;
 }

@@ -91,7 +91,8 @@ typedef struct utreexo_forest_ *utreexo_forest;
  * In:   filename: File name of the forest backend. If the file doesn't exist,
  *                 it'll be created.
  */
-extern int utreexo_forest_init(utreexo_forest *p, const char *filename);
+extern int utreexo_forest_init(utreexo_forest *p, const char *map_name,
+                               const char *forest_name);
 
 /**
  * Frees-up a forest. This method should be called when you're done with
@@ -99,7 +100,8 @@ extern int utreexo_forest_init(utreexo_forest *p, const char *filename);
  *
  * This method doesn't fail.
  *
- * In:  p: A valid forest that have been innitialized using utreexo_forest_init
+ * In:  p: A valid forest that have been innitialized using
+ * utreexo_forest_init
  */
 extern int utreexo_forest_free(utreexo_forest p);
 

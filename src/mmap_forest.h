@@ -52,7 +52,8 @@ static inline void grab_node(struct utreexo_forest *f,
                              utreexo_forest_node **sibling,
                              utreexo_forest_node **parent, uint64_t pos);
 
-/* A utility that implements the actual deletion code, and it's used by delete_single_* */
+/* A utility that implements the actual deletion code, and it's used by
+ * delete_single_* */
 static inline int delete_inner(struct utreexo_forest *f,
                                utreexo_forest_node *pnode,
                                utreexo_forest_node *psibling,
