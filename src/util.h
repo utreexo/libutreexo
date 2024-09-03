@@ -73,9 +73,9 @@ static inline node_offset detect_offset(uint64_t pos, uint64_t num_leaves) {
     tr -= 1;
   }
   return (node_offset){
-      .bits = pos,
       .tree = (uint8_t)bigger_trees,
       .depth = (uint8_t)(tr - nr),
+      .bits = !pos,
   };
 }
 

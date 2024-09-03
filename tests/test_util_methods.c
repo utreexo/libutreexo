@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "test_utils.h"
-#include "util.h"
+#include <util.h>
 
 void test_tree_rows() {
   ASSERT_EQ(tree_rows(8), 3);

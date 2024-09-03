@@ -14,7 +14,7 @@
 static inline struct utreexo_forest get_test_forest(const char *filename) {
   void *heap = NULL;
   struct utreexo_forest_file *file = NULL;
-  
+
   char forest_name[100];
   sprintf(forest_name, "forest_%s", filename);
   utreexo_forest_file_init(&file, &heap, forest_name);
@@ -164,7 +164,8 @@ void test_add_single() {
   utreexo_forest_file_init(&file, &heap, "forest_add_single.bin");
 
   utreexo_leaf_map leaf_map;
-  utreexo_leaf_map_new(&leaf_map, "forest_leaves_single.bin", O_CREAT | O_RDWR, NULL);
+  utreexo_leaf_map_new(&leaf_map, "forest_leaves_single.bin", O_CREAT | O_RDWR,
+                       NULL);
 
   struct utreexo_forest p = {
       .data = file,

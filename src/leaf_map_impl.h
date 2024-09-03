@@ -93,9 +93,9 @@ static inline void utreexo_leaf_map_set(utreexo_leaf_map *map,
   do {
     position = utreexo_leaf_map_get_pos(hash);
     ++hash;
-    
+
     pread(map->fd, &pnode, sizeof(utreexo_forest_node **), position);
-    
+
     if (pnode == NULL)
       break;
   } while (1);
@@ -121,7 +121,7 @@ static inline void utreexo_leaf_map_delete(utreexo_leaf_map *map,
     ++hash;
 
     pread(map->fd, &pnode, sizeof(utreexo_forest_node *), position);
-    
+
     if (pnode == utreexo_thumbstone)
       continue;
 
