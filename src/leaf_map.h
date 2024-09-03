@@ -8,11 +8,11 @@
  * *leaf is a pointer to that leaf inside the accumulator.
  *
  * When nodes are added and removed, it's only a pointer operation, and no data
- * gets moved arround, therefore, it's fair to keep pointers and derreference
- * them to get a (undeleted) node.
+ * gets moved around, therefore, it's fair to keep pointers and dereference
+ * them to get an (undeleted) node.
  *
  * This is a simple disk-based universal hashing hash map, we allocate a
- * gigantic file at the beggining (64GB) but use a sparse file, where we
+ * gigantic file at the beginning (64GB) but use a sparse file, where we
  * "pretend" we have 64GB, but the OS doesn't allocate that until we actually
  * use the space. This file starts with zero bytes and grows as we go.
  */
@@ -21,8 +21,16 @@
 
 #include "forest_node.h"
 
+/* Represents the offset of a leaf inside the file */
+typedef unsigned long leaf_offset;
+/* The hash function we'll use to hash keys */
+typedef leaf_offset (*hashfp)(unsigned char *key);
+
+/* Our leaf map, it's a simple hash map that maps leaf hashes to leaf pointers
+ */
 typedef struct {
   int fd;
+  hashfp hash;
 } utreexo_leaf_map;
 
 /* Creates a new leaf_map. This function doesn't allocate any memory, since
@@ -31,12 +39,13 @@ typedef struct {
  */
 static inline void utreexo_leaf_map_new(utreexo_leaf_map *map,
                                         const char *filename,
-                                        const unsigned int flags);
+                                        const unsigned int flags,
+                                        const hashfp hash);
 
 /* Gets a node's reference from the map. You should pass a pointer to a pointer
  * to a utreexo_forest_node. That's because you'll end-up with a
  * utreexo_forest_node*, the actual thing is inside the mmap-ed file, taking it
- * by value would create a copy that isn't what you whant.
+ * by value would create a copy that isn't what you want.
  */
 static inline void utreexo_leaf_map_get(utreexo_leaf_map *map,
                                         utreexo_forest_node **node,

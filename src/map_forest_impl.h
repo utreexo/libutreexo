@@ -23,7 +23,7 @@ static const char UTREEXO_ZERO_HASH[32] = {0};
 static inline void utreexo_forest_add(struct utreexo_forest *p,
                                       utreexo_node_hash leaf) {
   utreexo_forest_node *pnode = utreexo_forest_file_node_alloc(p->data);
-  // utreexo_leaf_map_set(&p->leaf_map, pnode, leaf);
+  utreexo_leaf_map_set(&p->leaf_map, pnode, leaf);
 
   *pnode = (utreexo_forest_node){
       .hash = {{0}}, .parent = NULL, .left_child = NULL, .right_child = NULL};

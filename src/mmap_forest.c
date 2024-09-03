@@ -4,6 +4,7 @@
 #include <valgrind/memcheck.h>
 
 #include "flat_file.h"
+#include "forest_node.h"
 #include "leaf_map.h"
 #include "map_forest_impl.h"
 #include "mmap_forest.h"
@@ -58,7 +59,7 @@ extern int utreexo_forest_init(struct utreexo_forest **p, const char *map_name,
   CHECK_PTR(forest_name);
 
   utreexo_leaf_map map;
-  utreexo_leaf_map_new(&map, map_name, O_CREAT | O_RDWR);
+  utreexo_leaf_map_new(&map, map_name, O_CREAT | O_RDWR, NULL);
 
   struct utreexo_forest *forest = malloc(sizeof(struct utreexo_forest));
   struct utreexo_forest_file *file = NULL;
