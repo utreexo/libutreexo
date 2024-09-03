@@ -49,7 +49,7 @@ static inline void utreexo_forest_file_init(struct utreexo_forest_file **file,
   const int fsize = lseek(fd, 0, SEEK_END);
 
   char *data =
-      (char *)mmap(NULL, 1024 * 1024, PROT_READ | PROT_WRITE | PROT_GROWSUP,
+      (char *)mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE | PROT_GROWSUP,
                    MAP_FILE | MAP_SHARED, fd, 0);
 
   if (data == MAP_FAILED /*|| data != (void *)MAP_ORIGIN*/) {
@@ -152,8 +152,9 @@ utreexo_forest_file_node_alloc(struct utreexo_forest_file *file) {
               file->header->n_pages - 1,
               page_nodes * sizeof(utreexo_forest_node));
 
-  utreexo_forest_node *ptr = (utreexo_forest_node *)((char *)file->header->wrt_page + 16) + page_nodes;
-  
+  utreexo_forest_node *ptr =
+      (utreexo_forest_node *)((char *)file->header->wrt_page + 16) + page_nodes;
+
   ++(file->header->wrt_page->n_nodes);
   return ptr;
 }
