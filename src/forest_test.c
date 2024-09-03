@@ -14,12 +14,15 @@
 static inline struct utreexo_forest get_test_forest(const char *filename) {
   void *heap = NULL;
   struct utreexo_forest_file *file = NULL;
+  
+  char forest_name[100];
+  sprintf(forest_name, "forest_%s", filename);
+  utreexo_forest_file_init(&file, &heap, forest_name);
 
-  utreexo_forest_file_init(&file, &heap, filename);
   uint8_t *roots = ((uint8_t *)heap) + sizeof(uint64_t);
 
   char map_name[100];
-  sprintf(map_name, "map_%s", filename);
+  sprintf(map_name, "forest_map_%s", filename);
 
   utreexo_leaf_map map;
   utreexo_leaf_map_new(&map, map_name, O_CREAT | O_RDWR, NULL);
@@ -158,10 +161,10 @@ void test_add_single() {
 
   void *heap = NULL;
   struct utreexo_forest_file *file = NULL;
-  utreexo_forest_file_init(&file, &heap, "add_single.bin");
+  utreexo_forest_file_init(&file, &heap, "forest_add_single.bin");
 
   utreexo_leaf_map leaf_map;
-  utreexo_leaf_map_new(&leaf_map, "leaves_single.bin", O_CREAT | O_RDWR, NULL);
+  utreexo_leaf_map_new(&leaf_map, "forest_leaves_single.bin", O_CREAT | O_RDWR, NULL);
 
   struct utreexo_forest p = {
       .data = file,
@@ -178,15 +181,17 @@ void test_add_single() {
 
 void test_add_two() {
   TEST_BEGIN("add_two");
-  utreexo_node_hash leaf = {.hash = {0}};
-  hash_from_u8(leaf.hash, 0);
+  utreexo_node_hash leaf1 = {.hash = {0}};
+  utreexo_node_hash leaf2 = {.hash = {0}};
+  hash_from_u8(leaf1.hash, 0);
+  hash_from_u8(leaf2.hash, 1);
   struct utreexo_forest p = get_test_forest("add_two.bin");
-  utreexo_forest_add(&p, leaf);
-  utreexo_forest_add(&p, leaf);
+  utreexo_forest_add(&p, leaf1);
+  utreexo_forest_add(&p, leaf2);
   utreexo_forest_node *root = p.roots[1];
 
   unsigned char expected[32] = {0};
-  parent_hash(expected, leaf.hash, leaf.hash);
+  parent_hash(expected, leaf1.hash, leaf2.hash);
 
   ASSERT_ARRAY_EQ(root->hash.hash, expected, 32);
   TEST_END;

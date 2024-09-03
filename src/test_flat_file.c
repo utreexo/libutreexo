@@ -31,7 +31,7 @@ void test_free_page_list();
 int main() {
   struct utreexo_forest_file *file;
   void *heap = NULL;
-  utreexo_forest_file_init(&file, &heap, "test.bin");
+  utreexo_forest_file_init(&file, &heap, "flat_file_test.bin");
 
   const utreexo_forest_node *parent = test_create_nodes(file);
   test_retrieve_nodes(parent);
@@ -114,7 +114,7 @@ void test_add_many(int n_adds) {
 
   void *heap = NULL;
   struct utreexo_forest_file *file;
-  utreexo_forest_file_init(&file, &heap, "add_many.bin");
+  utreexo_forest_file_init(&file, &heap, "flat_fileadd_many.bin");
 
   for (int i = 0; i < n_adds; i++) {
     utreexo_forest_file_node_alloc(file);
@@ -128,7 +128,7 @@ void test_free_page_list() {
   TEST_BEGIN("test free page reallocation");
   struct utreexo_forest_file *file;
   void *heap = NULL;
-  utreexo_forest_file_init(&file, &heap, "reallocation.bin");
+  utreexo_forest_file_init(&file, &heap, "flat_file_reallocation.bin");
   utreexo_forest_node *nodes[NODES_PER_PAGE] = {0};
   const utreexo_forest_node node = {
       .hash = {{0}},

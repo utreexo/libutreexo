@@ -26,24 +26,19 @@ extern int utreexo_forest_modify(struct utreexo_forest *forest,
   CHECK_PTR_VAR(utxos, utxo_count);
   CHECK_PTR_VAR(stxos, stxo_count);
 
-  /* for (size_t utxo = 0; utxo < utxo_count; ++utxo) {
-     utreexo_forest_node *pnode = NULL;
-     utreexo_leaf_map_get(&forest->leaf_map, &pnode, utxos[utxo]);
-     if (pnode == NULL)
-       return -3;
-     if (delete_single(forest, pnode)) {
-       return -2;
-     }
-   }
+  for (size_t utxo = 0; utxo < utxo_count; ++utxo) {
+    utreexo_forest_node *pnode = NULL;
+    utreexo_leaf_map_get(&forest->leaf_map, &pnode, utxos[utxo]);
+    if (pnode == NULL)
+      return -3;
+    if (delete_single(forest, pnode)) {
+      return -2;
+    }
+  }
 
-   for (size_t i = 0; i < utxo_count; i++) {
-     utreexo_forest_add(forest, utxos[i]);
-   }*/
-  VALGRIND_MAKE_MEM_UNDEFINED(forest->data->header->wrt_page, sizeof(void *));
   for (size_t i = 0; i < utxo_count; i++) {
     utreexo_forest_add(forest, utxos[i]);
   }
-
   return 0;
 }
 

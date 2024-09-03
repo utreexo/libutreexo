@@ -63,15 +63,16 @@ static inline void utreexo_leaf_map_get(utreexo_leaf_map *map,
     position = utreexo_leaf_map_get_pos(hash);
     ++hash;
 
-    lseek(map->fd, position, SEEK_SET);
-    read(map->fd, &pnode, sizeof(utreexo_forest_node *));
-    if (pnode == utreexo_thumbstone)
-      continue; // we found a deleted node, keep looking
+    pread(map->fd, &pnode, sizeof(utreexo_forest_node *), position);
 
+    // this is a deleted node, keep looking
     if (pnode == utreexo_thumbstone)
       continue;
+    // we've reached an empty node and didn't find the leaf
+    // give up
     if (pnode == NULL)
       break;
+    // we found the leaf
     if (memcmp(pnode->hash.hash, leaf.hash, 32) == 0)
       break;
   } while (1);
@@ -88,17 +89,13 @@ static inline void utreexo_leaf_map_set(utreexo_leaf_map *map,
 
   unsigned int hash = map->hash(key);
   leaf_offset position = 0;
+
   do {
     position = utreexo_leaf_map_get_pos(hash);
     ++hash;
-
-    lseek(map->fd, position, SEEK_SET);
-    read(map->fd, &pnode, sizeof(utreexo_forest_node **));
-
-    if (pnode == utreexo_thumbstone) {
-      continue;
-    }
-
+    
+    pread(map->fd, &pnode, sizeof(utreexo_forest_node **), position);
+    
     if (pnode == NULL)
       break;
   } while (1);
@@ -106,12 +103,11 @@ static inline void utreexo_leaf_map_set(utreexo_leaf_map *map,
   if (pnode != NULL && pnode != utreexo_thumbstone)
     return;
 
-  lseek(map->fd, position, SEEK_SET);
-  write(map->fd, &node, sizeof(utreexo_forest_node *));
+  pwrite(map->fd, &node, sizeof(utreexo_forest_node *), position);
 }
 
-static inline void utreexo_leaf_delete(utreexo_leaf_map *map,
-                                       utreexo_node_hash leaf) {
+static inline void utreexo_leaf_map_delete(utreexo_leaf_map *map,
+                                           utreexo_node_hash leaf) {
   utreexo_forest_node *pnode = NULL;
   unsigned char key[36] = {0};
 
@@ -124,21 +120,20 @@ static inline void utreexo_leaf_delete(utreexo_leaf_map *map,
     position = utreexo_leaf_map_get_pos(hash);
     ++hash;
 
-    lseek(map->fd, position, SEEK_SET);
-    read(map->fd, &pnode, sizeof(utreexo_forest_node *));
-
-    if (pnode == utreexo_thumbstone) {
+    pread(map->fd, &pnode, sizeof(utreexo_forest_node *), position);
+    
+    if (pnode == utreexo_thumbstone)
       continue;
-    }
 
     // this node doesn't exist
-    if (pnode == NULL) {
+    if (pnode == NULL)
       break;
-    }
+
     // we found the node
     if (memcmp(pnode->hash.hash, leaf.hash, 32) == 0)
       break;
   } while (1);
+
   // node not found, return early
   if (pnode == NULL)
     return;
@@ -147,6 +142,5 @@ static inline void utreexo_leaf_delete(utreexo_leaf_map *map,
   // our open hashing alogritm wouldn't see the colliding elements added
   // afterwards.
   pnode = utreexo_thumbstone;
-  lseek(map->fd, position, SEEK_SET);
-  write(map->fd, &pnode, sizeof(utreexo_forest_node **));
+  pwrite(map->fd, &pnode, sizeof(utreexo_forest_node **), position);
 }
