@@ -8,17 +8,24 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - run: autoreconf -fi && ./configure && make
+  
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - run: autoreconf -fi
+      - run: ./configure
+      - run: make check
+      - run: contrib/run_tests.sh
+  
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: for file in $(find -name *.[c,h,hpp]); do clang-format --dry-run --Werror $file; done
 
-    - name: make
-      run: autoreconf -fi && ./configure && make
-
-    - name: make test
-      run: autoreconf -fi && ./configure && make check && ./test_flat_file && ./test_forest
-    
-    - name: linting
-      run: for file in $(find -name *.[c,h,hpp]); do clang-format --dry-run --Werror $file; done
